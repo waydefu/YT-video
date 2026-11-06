@@ -70,3 +70,23 @@ bash scripts/render.sh final
 
 **驗收準則**：CI／檔案結構檢查、靜態畫格、原生動畫實播、桌機／手機體驗、素材授權各自分開回報。沒有目標軟體能播放，就只能標記未驗證，不能宣稱已達到參考影片品質。先做 10–15 秒最難轉場，通過後才擴張長片；純文件改動則使用比例適當的文字／連結檢查。
 
+## 原生 PowerPoint 動態簡報（Morph）
+
+這條路線用 **PptxGenJS + PowerPoint OOXML** 製作可編輯的 `.pptx`，透過跨頁相同 `!!` 物件名稱實現鏡頭推進、平移、拉遠和空間揭露。**不是把外部 MP4 當作 PPT 動畫**。與 Blender 片頭及 Canva 研究獨立運作。
+
+| 檔案 | 用途 |
+| --- | --- |
+| [`docs/PPTX-CINEMATIC-MORPH.md`](docs/PPTX-CINEMATIC-MORPH.md) | 25 個電影式 Morph 製作配方、官方來源、授權、靜態與實播品質驗收 |
+| [`scripts/pptx_morph_patch.py`](scripts/pptx_morph_patch.py) | 無第三方 Python 依賴的 Office 原生 `p159:morph` / fade fallback 寫入器；可去重重複媒體 |
+| [`scripts/build_morph_example.js`](scripts/build_morph_example.js) | PptxGenJS 五鏡頭可編輯示範產生器；可改用已授權的 `WORLD_IMAGE` |
+| [`tests/test_pptx_morph_patch.py`](tests/test_pptx_morph_patch.py) | XML 物件名稱、13 範例相關流程的核心 Morph、Fallback、圖片去重單元測試 |
+| [`.agents/skills/powerpoint-cinematic/SKILL.md`](.agents/skills/powerpoint-cinematic/SKILL.md) | 後續 AI 製作／審查 PowerPoint 轉場時的技能流程 |
+
+```bash
+npm install --no-save pptxgenjs
+node scripts/build_morph_example.js
+python3 scripts/pptx_morph_patch.py morph-draft.pptx morph-native.pptx --duration 1350 --hold 4700
+python3 -m unittest discover -s tests -v
+```
+
+**限制**：PPTX OOXML 結構可在 CI 驗證，但真正的 Morph 影格品質仍須在支援 Morph 的 PowerPoint 播放檢查；LibreOffice 靜態輸出不等於 Morph 通過。Anatomy 的 14 頁研究樣片目前以對話交付的 PPTX 與 source ZIP 為準，**不在此 PR 放未完成實播驗收的 final 二進位檔**。
