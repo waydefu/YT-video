@@ -1,0 +1,88 @@
+name: Anatomy Raptor — one-scene native Morph candidate
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/anatomy_raptor_morph.py'
+      - 'docs/ANATOMY-RAPTOR-V5-QA.md'
+      - '.github/workflows/anatomy-raptor-morph.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Install reproducible build dependencies
+        run: |
+          python -m pip install --disable-pip-version-check "python-pptx==1.0.2" "Pillow==11.3.0"
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends libreoffice-impress fonts-noto-cjk poppler-utils
+      - name: Download official art and complete license from pinned upstream revision
+        env:
+          UPSTREAM: 1482e8469b0a9e0d8cc18ea2740a01423d29ae80
+        run: |
+          set -euo pipefail
+          mkdir -p build/anatomy-raptor
+          curl -fL --retry 3 --connect-timeout 15 --max-time 90 \
+            "https://raw.githubusercontent.com/wheresryan22/anatomy/$UPSTREAM/.github/assets/raptor-engine-firing.webp" \
+            -o build/anatomy-raptor/raptor-engine-firing.webp
+          curl -fL --retry 3 --connect-timeout 15 --max-time 90 \
+            "https://raw.githubusercontent.com/wheresryan22/anatomy/$UPSTREAM/LICENSE" \
+            -o build/anatomy-raptor/LICENSE_ANATOMY.txt
+          printf '%s  %s\n' \
+            'c42a9eb6aacb506f7baf0fd91d4fbb04649999e9615f9847585daff595a62d55' \
+            'build/anatomy-raptor/raptor-engine-firing.webp' | sha256sum -c
+      - name: Make original editable PowerPoint with native Morph OOXML
+        run: |
+          set -euo pipefail
+          python -m compileall -q scripts/anatomy_raptor_morph.py
+          python scripts/anatomy_raptor_morph.py \
+            --image build/anatomy-raptor/raptor-engine-firing.webp \
+            --license build/anatomy-raptor/LICENSE_ANATOMY.txt \
+            --output build/anatomy-raptor/Anatomy_Raptor_Morph_Candidate.pptx \
+            | tee build/anatomy-raptor/structural_qa.json
+      - name: Render static endpoints (NOT native Morph playback)
+        run: |
+          set -euo pipefail
+          mkdir -p build/anatomy-raptor/render
+          libreoffice -env:UserInstallation=file:///tmp/lo-anatomy-raptor \
+            --headless --convert-to pdf --outdir build/anatomy-raptor \
+            build/anatomy-raptor/Anatomy_Raptor_Morph_Candidate.pptx
+          pdftoppm -f 1 -l 4 -png -r 120 \
+            build/anatomy-raptor/Anatomy_Raptor_Morph_Candidate.pdf \
+            build/anatomy-raptor/render/shot >/dev/null 2>&1
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          assets=sorted(Path('build/anatomy-raptor/render').glob('shot-*.png'))
+          assert len(assets)==4, assets
+          ims=[Image.open(p).convert('RGB') for p in assets]
+          w,h=ims[0].size
+          montage=Image.new('RGB',(w*2,h*2))
+          for j,im in enumerate(ims):
+              montage.paste(im,((j%2)*w,(j//2)*h))
+          montage.save('build/anatomy-raptor/STATIC_QA_4SHOT.png',optimize=True)
+          print('Generated static montage (NOT a playback recording).')
+          PY
+      - name: Upload artifacts for visual review without claiming final approval
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: anatomy-raptor-one-scene-morph-candidate
+          path: |
+            build/anatomy-raptor/*.pptx
+            build/anatomy-raptor/STATIC_QA_4SHOT.png
+            build/anatomy-raptor/structural_qa.json
+            build/anatomy-raptor/LICENSE_ANATOMY.txt
+            build/anatomy-raptor/raptor-engine-firing.webp
+          retention-days: 14
+          if-no-files-found: error
