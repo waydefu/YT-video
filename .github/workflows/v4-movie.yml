@@ -1,0 +1,65 @@
+name: V4 true 3D opening motion preview
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/v4-movie.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render-motion:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Setup fixed official Blender 4.2 LTS with archive cache
+        uses: BradyAJohnston/setup-blender@1006ec809db1af1422bd1197e107e2c4d368d81e # v5 fixed SHA
+        with:
+          version: '4.2.23'
+      - name: Verify Blender and FFmpeg
+        run: |
+          blender --version
+          ffmpeg -version | head -n 1
+          ffprobe -version | head -n 1
+      - name: Fetch SHA256 pinned Poly Haven CC0 marble bust
+        run: python3 scripts/fetch_cc0_bust.py --output assets/external/marble_bust_01.glb
+      - name: Render every single frame as original 3-D Blender image
+        run: |
+          blender -b -t 2 --python blender/v4_opening.py -- --asset assets/external/marble_bust_01.glb --output build/v4 --movie-preview
+          test "$(find build/v4/movie_frames -maxdepth 1 -type f -name '*.png' | wc -l)" -eq 150
+      - name: Create original stereo cinematic intro soundscape
+        run: python3 scripts/v4_opening_audio.py build/v4/opening.wav
+      - name: Encode actual Blender motion with original audio
+        run: |
+          ffmpeg -hide_banner -loglevel error -nostdin -y \
+            -framerate 24 -start_number 1 -i build/v4/movie_frames/frame_%04d.png \
+            -i build/v4/opening.wav -t 6.25 \
+            -vf 'scale=960:540:flags=lanczos,hqdn3d=1.8:1.2:3.0:2.0' \
+            -r 24 -c:v libx264 -crf 21 -preset medium -pix_fmt yuv420p \
+            -c:a aac -b:a 160k -ar 48000 -movflags +faststart \
+            build/v4/BROKE_TRIO_V4_true_motion_preview_960x540.mp4
+      - name: Validate frame rate aspect ratio duration and stereo audio
+        run: |
+          python3 - <<'PY'
+          import json,subprocess
+          path='build/v4/BROKE_TRIO_V4_true_motion_preview_960x540.mp4'
+          out=subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',path])
+          meta=json.loads(out)
+          video=next(s for s in meta['streams'] if s['codec_type']=='video')
+          audio=next(s for s in meta['streams'] if s['codec_type']=='audio')
+          assert (video['width'],video['height'])==(960,540), video
+          assert video['avg_frame_rate']=='24/1', video['avg_frame_rate']
+          assert 6.20<float(meta['format']['duration'])<6.35
+          assert audio['channels']==2
+          print('PASS true 3-D motion file: 960x540 16:9, 24fps, 6.25s, stereo AAC')
+          print('Visual composition and realism still require HUMAN review.')
+          PY
+      - name: Upload complete playable MP4 and editable Blender scene
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: BROKE_TRIO_V4_true_3D_motion_MP4
+          path: |
+            build/v4/*.mp4
+            build/v4/*.blend
+          retention-days: 7
+          if-no-files-found: error
