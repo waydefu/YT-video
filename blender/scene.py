@@ -277,7 +277,11 @@ def stage():
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
     scene.cycles.samples = 12
-    scene.cycles.use_denoising = True
+    # The Ubuntu distribution build of Blender/Cycles may not include
+    # OpenImageDenoise. Explicitly disable denoise for both scene and view layer;
+    # otherwise a valid scene renders with "Build without OpenImageDenoiser".
+    scene.cycles.use_denoising = False
+    bpy.context.view_layer.cycles.use_denoising = False
     scene.render.film_transparent = False
     scene.world.color = (0, 0, 0)
 
