@@ -10,6 +10,7 @@ ASSET = "marble_bust_01"
 ORIGINAL = "https://polyhaven.com/a/marble_bust_01"
 DOWNLOAD = "https://files.innerscene.com/library/marble-bust-f5604fc9/154620fb9200428d8399/polyhaven-marble-bust-01.glb"
 USER_AGENT = "BROKE-TRIO-Video-Production/1.0 (source: waydefu/YT-video)"
+EXPECTED_SHA256 = "f09278501571c32e50edabcf9a2508427fe967c9511393ef18a6c9f360f340dd"
 
 def fetch(output):
     output = Path(output)
@@ -22,6 +23,9 @@ def fetch(output):
     magic, version, total = struct.unpack_from("<4sII", data)
     if magic != b"glTF" or version != 2 or total != len(data):
         raise ValueError("Expected self-contained glTF 2.0 binary GLB")
+    actual = hashlib.sha256(data).hexdigest()
+    if actual != EXPECTED_SHA256:
+        raise ValueError(f"Downloaded asset hash mismatch: {actual} != {EXPECTED_SHA256}")
     output.write_bytes(data)
     print("Model:", ORIGINAL)
     print("Downloaded from CC0 Poly Haven model mirrored by Innerscene:", DOWNLOAD)
