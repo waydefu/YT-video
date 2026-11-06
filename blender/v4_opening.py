@@ -77,7 +77,7 @@ def fog():
     bpy.ops.mesh.primitive_cube_add(size=2, location=(0, .6, 1.37))
     obj=bpy.context.object
     obj.name="Volume fog | physical 3-D density, no 2-D fog cards"
-    obj.scale=(4.3,3.5,2.48)
+    obj.scale=(3.65,2.75,2.05)
     m=bpy.data.materials.new("Smoke / cool monochrome procedural 4D")
     m.use_nodes=True
     nodes=m.node_tree.nodes
@@ -92,11 +92,11 @@ def fog():
     noise.inputs["Detail"].default_value=5.0
     kf(noise.inputs["W"],"default_value",[(0,.12),(6.25,1.0)])
     ramp=nodes.new("ShaderNodeValToRGB")
-    ramp.color_ramp.elements[0].position=.29
-    ramp.color_ramp.elements[1].position=.77
+    ramp.color_ramp.elements[0].position=.48
+    ramp.color_ramp.elements[1].position=.81
     mult=nodes.new("ShaderNodeMath")
     mult.operation="MULTIPLY"
-    mult.inputs[1].default_value=.12
+    mult.inputs[1].default_value=.070
     links=m.node_tree.links
     links.new(noise.outputs["Fac"],ramp.inputs["Fac"])
     links.new(ramp.outputs["Color"],mult.inputs[0])
@@ -108,7 +108,7 @@ def spot(name, xyz, target, color, times):
     data=bpy.data.lights.new(name,"SPOT")
     data.energy=0
     data.color=color
-    data.spot_size=math.radians(31)
+    data.spot_size=math.radians(23)
     data.spot_blend=.48
     data.shadow_soft_size=.15
     obj=bpy.data.objects.new(name,data)
@@ -135,7 +135,7 @@ def build(asset, output):
     bpy.ops.object.delete(use_global=False)
     scene=bpy.context.scene
     scene.render.engine="CYCLES"
-    scene.cycles.samples=12
+    scene.cycles.samples=40
     scene.cycles.use_denoising=False
     bpy.context.view_layer.cycles.use_denoising=False
     scene.render.film_transparent=False
@@ -149,19 +149,20 @@ def build(asset, output):
     scene.frame_start=1
     scene.frame_end=END
     scene.view_settings.view_transform="Standard"
+    scene.view_settings.exposure=-0.55
     # No floor plane, no fake horizon line.
     fog()
     # LEFT beam fully extinguished before RIGHT beam starts.
     spot("BEAM 01 LEFT",(-4.8,-2.7,5.4),(0,.4,1.25),(1,.95,.87),[
-        (0,0),(.74,0),(1.04,2250),(1.62,2250),(1.94,0),(6.25,0)])
+        (0,0),(.74,0),(1.04,5900),(1.62,5900),(1.94,0),(6.25,0)])
     spot("BEAM 02 RIGHT",(4.8,-2.7,5.4),(0,.4,1.25),(.86,.91,1),[
-        (0,0),(2.12,0),(2.42,2300),(2.83,2300),(3.12,0),(6.25,0)])
+        (0,0),(2.12,0),(2.42,6200),(2.83,6200),(3.12,0),(6.25,0)])
     # Separate softbox only after both opening beams switch off.
-    softbox("MOVIE portrait key",(-2.5,-4.6,5.0),700,3.40)
-    softbox("MOVIE portrait rim",(3.1,1.0,4.3),850,3.45)
+    softbox("MOVIE portrait key",(-2.5,-4.6,5.0),470,3.40)
+    softbox("MOVIE portrait rim",(3.1,1.0,4.3),600,3.45)
     # Small fog-only fill to reveal smoke in the dark without showing a figure.
     fill=bpy.data.lights.new("Deep fog fill, not third spot","AREA")
-    fill.energy=27
+    fill.energy=5
     fill.shape="DISK"
     fill.size=6
     fillobj=bpy.data.objects.new("Low contrast haze fill",fill)
@@ -174,9 +175,9 @@ def build(asset, output):
     cam=bpy.data.objects.new("Camera",camdata)
     bpy.context.collection.objects.link(cam)
     scene.camera=cam
-    camdata.lens=52
+    camdata.lens=48
     camdata.clip_end=200
-    for t,xyz in [(0,(0,-9.6,1.47)),(3.2,(0,-9.6,1.47)),(5.6,(0,-8.7,1.48)),(6.25,(0,-8.7,1.48))]:
+    for t,xyz in [(0,(0,-9.3,1.47)),(3.2,(0,-9.3,1.47)),(5.6,(0,-8.0,1.47)),(6.25,(0,-8.0,1.47))]:
         cam.location=xyz
         look_at(cam,(0,0,1.37))
         cam.keyframe_insert(data_path="location",frame=fr(t))
