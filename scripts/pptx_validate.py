@@ -127,27 +127,29 @@ def check_slide(name, xml, number, total, args, report):
         if off:
             warns.append(f"{name}: loop periods {off} ms do not divide hold {args.hold_ms} ms — "
                          "poses will be mid-cycle when the next Morph starts (possible visual pop)")
-    # readability: tiny text is unreadable on phones / recordings
-    for run in root.iter(q(A, "r")):
-        rpr, txt = run.find(q(A, "rPr")), run.find(q(A, "t"))
-        if rpr is not None and txt is not None and (txt.text or "").strip() and (rpr.get("sz") or "").isdigit():
-            if int(rpr.get("sz")) < args.min_font * 100:
-                warns.append(f"{name}: '{txt.text.strip()[:20]}' is {int(rpr.get('sz')) / 100:g} pt (< {args.min_font} pt)")
-    # text safe area
+    # text checks: size (phones / recordings) and edge-safe area, only for text meant to be read
     size = report["size"]
+    readable = (getattr(args, "readable", None) or {}).get(str(number))
     for sp in root.iter(q(P, "sp")):
-        if sp.find(q(P, "txBody")) is None:
+        tx = sp.find(q(P, "txBody"))
+        cnv = sp.find(f".//{q(P, 'cNvPr')}")
+        if tx is None or cnv is None:
             continue
         text = "".join(t.text or "" for t in sp.iter(q(A, "t"))).strip()
+        if not text or (readable is not None and cnv.get("name") not in readable):
+            continue
+        for rpr in sp.iter(q(A, "rPr")):
+            if (rpr.get("sz") or "").isdigit() and int(rpr.get("sz")) < args.min_font * 100:
+                warns.append(f"{name}: '{text[:20]}' is {int(rpr.get('sz')) / 100:g} pt (< {args.min_font:g} pt)")
+                break
         xfrm = sp.find(f".//{q(A, 'xfrm')}")
-        if not text or xfrm is None:
+        if xfrm is None:
             continue
         off, ext = xfrm.find(q(A, "off")), xfrm.find(q(A, "ext"))
-        x, y = int(off.get("x")), int(off.get("y"))
-        w, h = int(ext.get("cx")), int(ext.get("cy"))
+        x, y, w, h = int(off.get("x")), int(off.get("y")), int(ext.get("cx")), int(ext.get("cy"))
         mx, my = args.edge * size[0], args.edge * size[1]
         if x >= size[0] or y >= size[1] or x + w <= 0 or y + h <= 0:
-            continue  # fully off-canvas world object (e.g. a sign waiting for a later camera shot)
+            continue  # fully off-canvas world object waiting for a later camera shot
         if x < mx or y < my or x + w > size[0] - mx or y + h > size[1] - my:
             report["safe"].append(f"slide {number}: '{text[:24]}' outside {args.edge:.0%} edge-safe area")
 
@@ -190,9 +192,11 @@ def main():
                     help="pattern repeat angle of spinning art (e.g. 22.5 for 16 alternating rays)")
     ap.add_argument("--min-font", type=float, default=14, help="warn below this pt size")
     ap.add_argument("--edge", type=float, default=0.05, help="text edge-safe margin (fraction)")
+    ap.add_argument("--readable", type=Path, help="JSON {slide: [shape names meant to be read]}; other text is ignored")
     ap.add_argument("--strict", action="store_true", help="treat WARN and safe-area as FAIL")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
+    args.readable = json.loads(args.readable.read_text(encoding="utf-8")) if args.readable else None
     rep = validate(args.deck, args)
     out = {k: v for k, v in rep.items() if k != "bang"}
     out["bang"] = {k: sorted(v) for k, v in rep["bang"].items()}

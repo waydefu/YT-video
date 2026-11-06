@@ -16,7 +16,14 @@ description: Use for native editable PowerPoint (.pptx) presentations with cinem
 9. Inspect static PNGs, verify slide count and XML, check deliberate off-canvas world images separately from accidental text overflow. **Do not claim successful native Morph playback without Microsoft PowerPoint render / manual review.** LibreOffice static previews are not playback evidence.
 10. Source facts and rights; do not merge PR, publish a deck as final, or upload a YouTube video without user approval. Show what was executed locally vs in CI vs not tested.
 
-## Live-motion layer (for "Live 2D-like" requests)
+## Seamless explainer decks (primary use: popular-science YouTube PPT)
+
+- Deliverable is a formal, editable content deck whose transitions are continuous camera moves. It is NOT character animation. Read `docs/PPTX-SEAMLESS-EXPLAINER.md` first.
+- Model the deck as one world of panels; each slide is a camera pose. Use zoom-through (next slide lives inside a window of the previous one), pan, and pull-back reveal. Keep each zoom ratio <= ~3.5x, compensate font sizes so the focused panel reads at design size, split huge backgrounds (<~56 in) and hide seams.
+- Run `scripts/pptx_validate.py --readable ... --strict` and `scripts/pptx_morph_proxy.py` (geometry proxy: can reject a design, never prove it). PowerPoint playback and video export stay BLOCKED until actually observed.
+- Facts go in a source ledger and need human review before publishing.
+
+## Live-motion layer (optional ambient loops)
 
 - Read `docs/PPTX-LIVE-MOTION.md` first. State plainly that PowerPoint offers rigid 2D transforms, not Live2D mesh deformation/physics; never claim equivalence.
 - Name every animated part `!!NAME`; group swaying parts with an invisible pivot-weight shape so the group centre is the joint; give eyes their own group.

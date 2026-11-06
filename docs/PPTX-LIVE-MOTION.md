@@ -2,6 +2,8 @@
 
 > 版本 2026-11-06｜狀態：**RESEARCH + SPIKE**。結構（A）與靜態畫面（B）已自行檢查；**Microsoft PowerPoint 實際播放（C）未執行 = BLOCKED**。本文件不是任何成品通過驗收的證據。
 
+> **2026-11-06 更正（使用者澄清）**：實際需求是**科普 YouTube 用的正式簡報 + 無縫的鏡頭式 Morph 轉場**，**不是角色動畫／Live2D**。主線文件改為 [`PPTX-SEAMLESS-EXPLAINER.md`](PPTX-SEAMLESS-EXPLAINER.md)。本文件保留為「選用的環境動態層」研究（`pptx_motion.py`）與參考影片逐幀分析；Living Scene 角色樣片僅是能力示範，**不是交付物**。下面 §0 的「Live 2D 感」解讀作廢。
+
 ## 0. 先釐清交付契約（G0）
 
 使用者要求：**簡報一開始播放，感覺就像 Live 2D 動畫**，並提供一支參考影片（Canva 簡報播放的手機錄影）。

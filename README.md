@@ -7,7 +7,8 @@
 | Blender 片頭（V3 程序化 blockout → V4 授權大理石半身像 + 依序聚光燈） | SPIKE / PREVIEW：CI 可產生 smoke 幀與 24 fps 預覽，**尚未經人工美術驗收** | 需人工檢視畫面；崩解／重組段落尚未製作 |
 | Canva 動態簡報技巧庫 | RESEARCH：只有文件，**沒有做出任何 Canva 樣片** | 需先做 10–15 秒最難轉場樣片 |
 | PowerPoint Morph + Anatomy 官方素材 4 鏡頭 | SPIKE / CANDIDATE：結構與靜態由 CI 產出 | **PowerPoint 實播 BLOCKED** |
-| PowerPoint「Live 2D 式」動態層 + 原創 Living Scene | **SPIKE**：自動循環動畫已注入，結構測試通過 | **PowerPoint 實播 BLOCKED**；美術等級不足 |
+| **科普 YT 正式簡報 + 無縫 Morph 轉場（主線）** | **SPIKE**：4 頁樣片（鑽進視窗、平移、畫框拉遠揭露），結構與轉場代理幀已自查 | **PowerPoint 實播與匯出影片 BLOCKED**；事實待審 |
+| 選用：環境動態層（Living Scene 角色僅為能力示範，非交付物） | SPIKE：循環動畫已注入，結構測試通過 | PowerPoint 實播 BLOCKED |
 
 以下 Blender 段落描述原始 V3 設計；V4 的素材與時間線見 `docs/V4-ASSETS.md`。
 
@@ -100,7 +101,21 @@ python3 -m unittest discover -s tests -v
 
 **限制**：PPTX OOXML 結構可在 CI 驗證，但真正的 Morph 影格品質仍須在支援 Morph 的 PowerPoint 播放檢查；LibreOffice 靜態輸出不等於 Morph 通過。本 repo 內實際可重現的 Anatomy 樣片是 **4 頁 / 3 段 Morph 的 spike**（`scripts/anatomy_official_morph_spike.py`，CI 產出，見 `docs/ANATOMY-SPIKE-QA.md`）；較早對話中提到的 14 頁研究樣片**不在此 repo**，也未經實播驗收。
 
-## 「Live 2D 式」自動播放動態層（簡報最高標準路線）
+## 科普 YouTube 正式簡報：無縫 Morph 轉場（主線）
+
+正式可編輯 PPT，頁與頁之間是連續的鏡頭式轉場（鑽進視窗、平移、拉遠揭露）。方法、規則、流程與狀態見 [`docs/PPTX-SEAMLESS-EXPLAINER.md`](docs/PPTX-SEAMLESS-EXPLAINER.md)。
+
+```bash
+pip install python-pptx==1.0.2
+python3 scripts/build_science_explainer.py
+python3 scripts/pptx_validate.py build/science-explainer/science-explainer-spike.pptx --min-loops 3 --hold-ms 4800 --strict \
+  --readable build/science-explainer/science-explainer-spike.readable.json
+python3 scripts/pptx_morph_proxy.py build/science-explainer/science-explainer-spike.pptx build/science-explainer/proxy.pptx
+```
+
+**驗證狀態**：A 結構與 B 靜態／轉場代理（幾何插值，只能否決不能證明）已自查；**C PowerPoint 實播與匯出影片 NOT RUN**；科普事實為草稿待審。
+
+## 選用：自動播放環境動態層（「Live 2D 式」誤讀留下的工具）
 
 簡報一開始播放，所有圖層就持續微動（呼吸、眨眼、髮絲擺動、漂浮、粒子、旋轉光芒），搭配 Morph 鏡頭與視差。**這是剛體 2D 變換，不是 Live2D 網格變形**；完整研究、能力邊界與工作流見 [`docs/PPTX-LIVE-MOTION.md`](docs/PPTX-LIVE-MOTION.md)。
 

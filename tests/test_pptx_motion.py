@@ -196,5 +196,32 @@ class ReadabilityTests(unittest.TestCase):
             self.assertTrue(any("'Tiny' is 10 pt" in w for w in rep["warns"]), rep["warns"])
 
 
+class ProxyTests(unittest.TestCase):
+    def test_proxy_interpolates_matching_names_and_fades_the_rest(self):
+        try:
+            from pptx import Presentation
+            from pptx.util import Inches
+        except ImportError:
+            self.skipTest("python-pptx not installed")
+        PROXY = load("pptx_morph_proxy")
+        with TemporaryDirectory() as d:
+            src, out = Path(d) / "a.pptx", Path(d) / "p.pptx"
+            prs = Presentation()
+            for left, extra in ((1.0, True), (5.0, False)):
+                sl = prs.slides.add_slide(prs.slide_layouts[6])
+                box = sl.shapes.add_textbox(Inches(left), Inches(1), Inches(2), Inches(1))
+                box.name = "!!BOX"
+                if extra:
+                    sl.shapes.add_shape(1, Inches(0), Inches(0), Inches(1), Inches(1)).name = "!!GONE"
+            prs.save(src)
+            self.assertEqual(PROXY.build(src, out, 1), 3)  # slide 1, one frame at t=0.5, slide 2
+            mid = Presentation(out).slides[1]
+            box = [s for s in mid.shapes if s.name == "!!BOX"][0]
+            self.assertAlmostEqual(box.left / 914400, 3.0, places=2)  # smoothstep(0.5) = 0.5
+            self.assertTrue(any(s.name == "!!GONE" for s in mid.shapes))  # fades out underneath
+            self.assertTrue(any(s.name == "PROXY_LABEL" for s in mid.shapes))
+            self.assertAlmostEqual(PROXY.smoothstep(0.5), 0.5)
+
+
 if __name__ == "__main__":
     unittest.main()
