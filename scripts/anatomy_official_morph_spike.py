@@ -150,6 +150,11 @@ def main():
     a.add_argument('--output',type=Path,required=True)
     arg=a.parse_args()
     img=assets_in(arg.assets)
+    license_file=arg.assets.parent/'LICENSE_ANATOMY.txt'
+    if not license_file.is_file():
+        raise FileNotFoundError('Required upstream MIT LICENSE not available: '+str(license_file))
+    license_text=license_file.read_text(encoding='utf-8')
+    assert 'Copyright (c) 2026 Ryan' in license_text
     p=Presentation();p.slide_width=i(W);p.slide_height=i(H)
     for cx,cy,zoom,cap,tag,num in SHOTS:
         sl=p.slides.add_slide(p.slide_layouts[6])
@@ -158,7 +163,7 @@ def main():
         sl.notes_slide.notes_text_frame.text=(
             '官方示範圖：wheresryan22/anatomy；MIT License，Copyright (c) 2026 Ryan。'
             ' 本 PPT 僅使用原始靜態範例圖作連續鏡頭特寫，並非實際可互動 Anatomy 動畫。'
-            ' PowerPoint 原生 Morph 實播狀態：NOT RUN。')
+            ' PowerPoint 原生 Morph 實播狀態：NOT RUN。\\n\\n' + license_text)
     arg.output.parent.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory() as d:
         draft=Path(d)/'draft.pptx';p.save(draft)
