@@ -81,6 +81,8 @@ def style(shp, fill, alpha=None, line=None, width=0):
         shp.line.width = Pt(width or 1)
     else:
         shp.line.fill.background()
+    if shp._element.spPr.find(qn("a:effectLst")) is None:  # never inherit the theme's shadow
+        etree.SubElement(shp._element.spPr, qn("a:effectLst"))
 
 
 def catmull(points, n=8, closed=True):

@@ -12,3 +12,4 @@ __pycache__/
 
 assets/external/
 build/v4/
+node_modules/

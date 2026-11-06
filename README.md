@@ -6,7 +6,8 @@
 | --- | --- | --- |
 | Blender 片頭（V3 程序化 blockout → V4 授權大理石半身像 + 依序聚光燈） | SPIKE / PREVIEW：CI 可產生 smoke 幀與 24 fps 預覽，**尚未經人工美術驗收** | 需人工檢視畫面；崩解／重組段落尚未製作 |
 | Canva 動態簡報技巧庫 | RESEARCH：只有文件，**沒有做出任何 Canva 樣片** | 需先做 10–15 秒最難轉場樣片 |
-| PowerPoint Morph + Anatomy 官方素材 4 鏡頭 | SPIKE / CANDIDATE：結構與靜態由 CI 產出 | **PowerPoint 實播 BLOCKED** |
+| PowerPoint Morph + Anatomy 官方素材 4 鏡頭（#6）與單一 Raptor 場景（#7） | SPIKE / CANDIDATE：結構與靜態由 CI 產出 | **PowerPoint 實播 BLOCKED** |
+| **Anatomy 科普簡報（13 頁，官方原始資料圖 + 無縫 Morph 轉場）** | **SPIKE / PREVIEW**：結構、靜態、轉場代理幀已自查 | **PowerPoint 實播、匯出影片、手機觀看 BLOCKED／NOT RUN**；事實待人工核對 |
 | **科普 YT 正式簡報 + 無縫 Morph 轉場（主線）** | **SPIKE**：4 頁樣片（鑽進視窗、平移、畫框拉遠揭露），結構與轉場代理幀已自查 | **PowerPoint 實播與匯出影片 BLOCKED**；事實待審 |
 | 選用：環境動態層（Living Scene 角色僅為能力示範，非交付物） | SPIKE：循環動畫已注入，結構測試通過 | PowerPoint 實播 BLOCKED |
 
@@ -101,7 +102,18 @@ python3 -m unittest discover -s tests -v
 
 **限制**：PPTX OOXML 結構可在 CI 驗證，但真正的 Morph 影格品質仍須在支援 Morph 的 PowerPoint 播放檢查；LibreOffice 靜態輸出不等於 Morph 通過。本 repo 內實際可重現的 Anatomy 樣片是 **4 頁 / 3 段 Morph 的 spike**（`scripts/anatomy_official_morph_spike.py`，CI 產出，見 `docs/ANATOMY-SPIKE-QA.md`）；較早對話中提到的 14 頁研究樣片**不在此 repo**，也未經實播驗收。
 
-## 科普 YouTube 正式簡報：無縫 Morph 轉場（主線）
+## Anatomy 科普簡報（官方原始資料圖 + 無縫 Morph 轉場）
+
+13 頁正式簡報，說明 Anatomy 是什麼、能做什麼、怎麼安裝與使用、適合誰、優缺點、不適合誰；圖像全部取自上游官方（固定 commit、SHA256 核對、MIT 授權隨檔）。內容、授權、事實台帳與已知問題見 [`docs/ANATOMY-EXPLAINER.md`](docs/ANATOMY-EXPLAINER.md)。
+
+```bash
+python3 scripts/anatomy_assets.py            # 下載並核對官方素材（需要 poppler-utils、Node + playwright）
+python3 scripts/build_anatomy_explainer.py   # --hold 依旁白長度設定；字型需已安裝（見文件）
+python3 scripts/pptx_validate.py build/anatomy/anatomy-explainer.pptx --min-loops 0 --strict \
+  --readable build/anatomy/anatomy-explainer.readable.json
+```
+
+## 科普 YouTube 正式簡報：無縫 Morph 轉場（方法與範例）
 
 正式可編輯 PPT，頁與頁之間是連續的鏡頭式轉場（鑽進視窗、平移、拉遠揭露）。方法、規則、流程與狀態見 [`docs/PPTX-SEAMLESS-EXPLAINER.md`](docs/PPTX-SEAMLESS-EXPLAINER.md)。
 
