@@ -96,7 +96,7 @@ def fog():
     ramp.color_ramp.elements[1].position=.81
     mult=nodes.new("ShaderNodeMath")
     mult.operation="MULTIPLY"
-    mult.inputs[1].default_value=.070
+    mult.inputs[1].default_value=.038
     links=m.node_tree.links
     links.new(noise.outputs["Fac"],ramp.inputs["Fac"])
     links.new(ramp.outputs["Color"],mult.inputs[0])
@@ -108,7 +108,7 @@ def spot(name, xyz, target, color, times):
     data=bpy.data.lights.new(name,"SPOT")
     data.energy=0
     data.color=color
-    data.spot_size=math.radians(23)
+    data.spot_size=math.radians(31)
     data.spot_blend=.48
     data.shadow_soft_size=.15
     obj=bpy.data.objects.new(name,data)
@@ -117,6 +117,57 @@ def spot(name, xyz, target, color, times):
     look_at(obj,target)
     kf(data,"energy",times)
     return obj
+
+def spotlight_scattering_volume(name, lamp_xyz, target_xyz, cone_angle, visibility):
+    """Closed 3-D cone of *actual* volume-scattering medium aligned with a spot.
+
+    The old fog box ended at z=3.42 but lamps were at z=5.4. Most of
+    each lamp cone passed through a vacuum. Keep a local true volumetric
+    medium along the complete shaft; the lamp still provides all the light.
+    The cone is NOT a glowing surface or flat overlay.
+    """
+    a, b = Vector(lamp_xyz), Vector(target_xyz)
+    axis = a - b
+    length = axis.length
+    # Slightly smaller than spot outer edge, so softened beam tails remain
+    # volumetric while rays outside the lamp stay black.
+    outer = (length * math.tan(cone_angle * .5)) * .82
+    bpy.ops.mesh.primitive_cone_add(
+        vertices=64, radius1=outer, radius2=.045, depth=length,
+        location=(a+b)*.5,
+    )
+    ob = bpy.context.object
+    ob.name = name
+    ob.rotation_euler = axis.to_track_quat("Z", "Y").to_euler()
+
+    m = bpy.data.materials.new(name + " | actual Cycles volume scattering")
+    m.use_nodes = True
+    n = m.node_tree.nodes
+    n.clear()
+    output = n.new("ShaderNodeOutputMaterial")
+    volume = n.new("ShaderNodeVolumePrincipled")
+    volume.inputs["Color"].default_value = (.79,.79,.77,1)
+    volume.inputs["Anisotropy"].default_value = .12
+    noise = n.new("ShaderNodeTexNoise")
+    noise.noise_dimensions = "4D"
+    noise.inputs["Scale"].default_value = 2.3
+    noise.inputs["Detail"].default_value = 3.0
+    kf(noise.inputs["W"],"default_value",[(0,.0),(6.25,.27)])
+    ramp = n.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = .26
+    ramp.color_ramp.elements[1].position = .75
+    mul = n.new("ShaderNodeMath")
+    mul.operation = "MULTIPLY"
+    mul.inputs[1].default_value = .23
+    link = m.node_tree.links
+    link.new(noise.outputs["Fac"],ramp.inputs["Fac"])
+    link.new(ramp.outputs["Color"],mul.inputs[0])
+    link.new(mul.outputs[0],volume.inputs["Density"])
+    link.new(volume.outputs["Volume"],output.inputs["Volume"])
+    ob.data.materials.append(m)
+    kf(ob,"hide_render",visibility)
+    return ob
+
 
 def softbox(name, xyz, power, start):
     data=bpy.data.lights.new(name,"AREA")
@@ -153,16 +204,28 @@ def build(asset, output):
     # No floor plane, no fake horizon line.
     fog()
     # LEFT beam fully extinguished before RIGHT beam starts.
+    # The lamps are ABOVE the main diffuse fog: add narrow local volumes
+    # following their actual 3-D light paths. In alternate frames only
+    # one shaft can receive light; energy zero + hide_render at the gap.
+    beam_angle = math.radians(31)
     spot("BEAM 01 LEFT",(-4.8,-2.7,5.4),(0,.4,1.25),(1,.95,.87),[
-        (0,0),(.74,0),(1.04,5900),(1.62,5900),(1.94,0),(6.25,0)])
+        (0,0),(.74,0),(1.04,3400),(1.62,3400),(1.94,0),(6.25,0)])
     spot("BEAM 02 RIGHT",(4.8,-2.7,5.4),(0,.4,1.25),(.86,.91,1),[
-        (0,0),(2.12,0),(2.42,6200),(2.83,6200),(3.12,0),(6.25,0)])
+        (0,0),(2.12,0),(2.42,3400),(2.83,3400),(3.12,0),(6.25,0)])
+    spotlight_scattering_volume(
+        "LEFT independent 3D scattering shaft",(-4.8,-2.7,5.4),
+        (0,.4,1.25), beam_angle,
+        [(0,True),(.74,False),(1.94,True),(6.25,True)])
+    spotlight_scattering_volume(
+        "RIGHT independent 3D scattering shaft",(4.8,-2.7,5.4),
+        (0,.4,1.25), beam_angle,
+        [(0,True),(2.12,False),(3.12,True),(6.25,True)])
     # Separate softbox only after both opening beams switch off.
     softbox("MOVIE portrait key",(-2.5,-4.6,5.0),470,3.40)
     softbox("MOVIE portrait rim",(3.1,1.0,4.3),600,3.45)
     # Small fog-only fill to reveal smoke in the dark without showing a figure.
     fill=bpy.data.lights.new("Deep fog fill, not third spot","AREA")
-    fill.energy=5
+    fill.energy=2.5
     fill.shape="DISK"
     fill.size=6
     fillobj=bpy.data.objects.new("Low contrast haze fill",fill)
