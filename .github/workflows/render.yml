@@ -1,0 +1,54 @@
+name: BROKE TRIO original 3D checks / rendering
+on:
+  pull_request:
+    paths:
+      - "blender/**"
+      - "scripts/**"
+      - "tests/**"
+      - "config/**"
+      - ".github/workflows/render.yml"
+  workflow_dispatch:
+    inputs:
+      preset:
+        description: "smoke (5 stills) / preview (960×540) / final (1920×1080)"
+        type: choice
+        options: [smoke, preview, final]
+        default: smoke
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Validate source and format contract
+        run: python3 -m unittest discover -s tests -v
+      - name: Compile all Python source
+        run: python3 -m compileall -q blender scripts
+  renderer:
+    if: github.event_name == 'workflow_dispatch'
+    needs: contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 110
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install Ubuntu Blender and FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender ffmpeg
+          blender --version
+      - name: Render true 3-D frames or MP4
+        env:
+          PRESET: ${{ inputs.preset }}
+        run: bash scripts/render.sh "$PRESET"
+      - name: Upload 3D project and preview for inspection (not public YouTube)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: broke-trio-${{ inputs.preset }}
+          path: |
+            build/checkpoints/*.png
+            build/*.blend
+            build/*.mp4
+          retention-days: 7
+          if-no-files-found: error
