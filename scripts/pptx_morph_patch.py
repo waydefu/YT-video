@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Office-native Morph injection for PPTX. Requires: pip install lxml.
+"""Office-native Morph injection for PPTX. Standard library only.
 
 Usage:
   python scripts/pptx_morph_patch.py draft.pptx final.pptx --duration 1300 --hold 4700
@@ -12,7 +12,7 @@ import re
 from collections import defaultdict
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
-from lxml import etree
+from xml.etree import ElementTree as etree
 
 P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 MC = "http://schemas.openxmlformats.org/markup-compatibility/2006"
