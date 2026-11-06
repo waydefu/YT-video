@@ -1,0 +1,43 @@
+{
+  "project": "BROKE TRIO cinematic ident",
+  "format": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 24,
+    "pixel_aspect": "1:1",
+    "duration_seconds": 10,
+    "video_codec": "h264",
+    "audio_codec": "aac",
+    "audio_rate": 48000
+  },
+  "safe_area": {
+    "subject": {
+      "left": 0.1,
+      "right": 0.9,
+      "top": 0.1,
+      "bottom": 0.9
+    },
+    "titles": {
+      "left": 0.15,
+      "right": 0.85,
+      "top": 0.15,
+      "bottom": 0.85
+    }
+  },
+  "lights": {
+    "left": {
+      "start": 0.85,
+      "end": 1.96
+    },
+    "right": {
+      "start": 2.15,
+      "end": 3.22
+    }
+  },
+  "emergence_start": 3.35,
+  "face_closeup": 4.8,
+  "fracture_start": 5.7,
+  "reassemble_start": 7.15,
+  "title_start": 8.7,
+  "source": "original-procedural"
+}
