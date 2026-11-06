@@ -360,8 +360,8 @@ def stage():
     raymat = plain_material("Subtle pale metal starburst", (.48, .47, .43, 1))
     for j in range(46):
         a = math.pi * j / 45
-        p1 = (2.14 * math.cos(a), 1.12, 2.06 + 1.90 * math.sin(a))
-        p2 = (2.75 * math.cos(a), 1.12, 2.06 + 2.47 * math.sin(a))
+        p1 = (2.05 * math.cos(a), 1.12, 2.06 + 0.95 * math.sin(a))
+        p2 = (2.62 * math.cos(a), 1.12, 2.06 + 1.28 * math.sin(a))
         o = cylinder("Halo radial filament", p1, p2, .009, raymat, vertices=6)
         animate(o, "scale", [(0, (0, 0, 0)), (7.8, (0, 0, 0)),
                              (8.7, (1, 1, 1))])
@@ -369,9 +369,9 @@ def stage():
 
     ivory = plain_material("Ivory titles", (.9, .87, .8, 1))
     # Camera-parented typography means position remains stable at every render size.
-    camera_text(camera, "BROKE TRIO", "SAFE 80% width TITLE", -.44, .77, ivory, 8.43, 8.84)
+    camera_text(camera, "BROKE TRIO", "SAFE 70% width TITLE", -.24, .68, ivory, 8.43, 8.84)
     camera_text(camera, "N O   M O N E Y   ·   N O   T I M E   ·   N O   9 - T O - 5",
-                "SAFE 76% width TAGLINE", -.64, .65, ivory, 8.79, 9.09)
+                "SAFE 70% width TAGLINE", -.47, .60, ivory, 8.79, 9.09)
     scene.render.resolution_x = 1920
     scene.render.resolution_y = 1080
     scene.render.resolution_percentage = 100
@@ -380,8 +380,22 @@ def stage():
     scene.render.fps = FPS
     scene.frame_start = 1
     scene.frame_end = END
-    scene.view_settings.view_transform = "AgX" if hasattr(scene.view_settings, "view_transform") else "Standard"
+    valid_transforms = {item.identifier for item in scene.view_settings.bl_rna.properties["view_transform"].enum_items}
+    scene.view_settings.view_transform = "AgX" if "AgX" in valid_transforms else "Standard"
     scene.camera.data.lens = 55
+    # Blender offline compositor: restrained bloom, retaining title contrast.
+    scene.use_nodes = True
+    comp = scene.node_tree
+    comp.nodes.clear()
+    layer = comp.nodes.new("CompositorNodeRLayers")
+    glow = comp.nodes.new("CompositorNodeGlare")
+    glow.glare_type = "FOG_GLOW"
+    glow.quality = "HIGH"
+    glow.threshold = 1.2
+    glow.mix = -0.88
+    output = comp.nodes.new("CompositorNodeComposite")
+    comp.links.new(layer.outputs["Image"], glow.inputs["Image"])
+    comp.links.new(glow.outputs["Image"], output.inputs["Image"])
     return scene
 
 
