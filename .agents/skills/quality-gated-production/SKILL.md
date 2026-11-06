@@ -7,7 +7,7 @@ description: Use on every new or significantly revised YT-video visual, animated
 
 **Mandatory first read**: `AGENTS.md` and `docs/QUALITY-GATED-WORKFLOW.md`, followed by medium-specific documents (`docs/SHOTLIST.md`, `config/production.json`, `docs/ASSET-RIGHTS.md`, Canva or PPTX guides).
 
-1. **G0 — Contract**: Pin exact output format and native behavior; include user benchmark. Do not substitute an MP4 for native Canva or PPTX Morph animation.
+1. **G0 — Contract**: Pin exact output format and native behavior; include user benchmark. Do not substitute an MP4 for native Canva or PPTX Morph animation. **Reading check**: restate the deliverable in one sentence plus what it is NOT; if the wording has materially different readings (e.g. "Live 2D"), state which one you took in your first reply and ask once only if you cannot decide.
 2. **G1 — Direction and rights**: Prove quality and licensing of chosen source visual assets; prioritize high-quality authorized references over low-fidelity procedural approximations.
 3. **G2 — Minimum proof**: Implement the riskiest required effect on a small usable sample first. For cinematic slides, begin with 10–15 seconds (2–4 camera poses) and continuous scene anchors.
 4. **G3 — Verify personally**: A) file structure, B) representative static frames, C) **actual playback or interaction in the target app**, D) desktop/mobile readability, E) factual/asset-rights review. Record evidence for each.
@@ -15,6 +15,8 @@ description: Use on every new or significantly revised YT-video visual, animated
 6. **G4 — Expand only after proof**: Extend the full sequence in batches and repeat G3 after every substantial revision.
 7. **G5 — Handoff**: Deliver editable source, preview, licenses, executed tests, limitations, stage and evidence. Draft PRs/CI never prove aesthetic quality. Do not merge or publish without authorization.
 8. Use meaningful smoke tests for small docs/code changes. Do not demand a video review for a docs-only PR; do not make claims about improved animation without actually testing animation.
+
+For slide decks with seamless Morph transitions and official source material, follow `docs/WORKFLOW-EXPLAINER-DECK.md` (P0–P9).
 
 Decision rule: **source of truth is the intended user experience, not the mere existence of code, slides, tests, or an export**.
 

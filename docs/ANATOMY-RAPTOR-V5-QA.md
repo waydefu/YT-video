@@ -1,5 +1,7 @@
 # Anatomy — 單一場景原生 Morph 自驗報告（v5 CANDIDATE）
 
+> **歷史紀錄**：這是#7 的單一 Raptor 場景候選的自驗報告。目前的 Anatomy 簡報是 [`ANATOMY-EXPLAINER.md`](ANATOMY-EXPLAINER.md)（13 頁、官方素材管線、世界面板轉場）；此檔保留供比對，不代表最新狀態。
+
 **2026-11-06：修復已合併 PR #6 的視覺失敗，不宣稱成品品質通過。**
 
 ## 修正前後

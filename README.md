@@ -76,6 +76,7 @@ bash scripts/render.sh final
 **交付契約 → 品質與授權素材 → 最小可驗證樣片 → 自己先實際驗收 → 不合格重做 → 通過才擴大 → 提交可查證 PR。**
 
 - [完整規範：`docs/QUALITY-GATED-WORKFLOW.md`](docs/QUALITY-GATED-WORKFLOW.md)
+- [簡報完整工作流（P0–P9，含官方素材、轉場規則、踩坑紀錄）：`docs/WORKFLOW-EXPLAINER-DECK.md`](docs/WORKFLOW-EXPLAINER-DECK.md)
 - [共用 AI 技能：`.agents/skills/quality-gated-production/SKILL.md`](.agents/skills/quality-gated-production/SKILL.md)
 - [PR 驗收表：`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md)
 

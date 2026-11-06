@@ -5,6 +5,8 @@ description: Use for native editable PowerPoint (.pptx) presentations with cinem
 
 # Cinematic native PowerPoint agent skill
 
+End-to-end procedure: `docs/WORKFLOW-EXPLAINER-DECK.md` (P0 contract and misreading check → P1 fact ledger → P2 pinned official assets → P3 storyboard → P4 minimum sample → P5 build → P6 structure → P7 per-slide and per-transition review → P8 PowerPoint playback/export (user) → P9 delivery). The numbered rules below are the PowerPoint-specific details.
+
 1. Read `AGENTS.md`, `docs/PPTX-CINEMATIC-MORPH.md`, `docs/ASSET-RIGHTS.md`, `docs/TECH-REUSE.md` and `config/production.json`. Any change to the Blender ident also requires `docs/SHOTLIST.md`.
 2. Define the output as **editable PPTX with native Morph**. An MP4 preview, Keynote, static slide export, or HTML animation is **not an acceptable substitute**. Distinguish a native slide transition from animated footage inserted into a slide.
 3. Choose a storyboard with one visual anchor that survives between adjacent slides. Reuse *the same media object* or matching `!!` named shapes, changing transforms as a camera move: macro → pullback → pan → inset detail → reveal.
