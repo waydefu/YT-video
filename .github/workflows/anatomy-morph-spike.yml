@@ -32,6 +32,9 @@ jobs:
               "https://raw.githubusercontent.com/wheresryan22/anatomy/$ANATOMY_REV/.github/assets/$key.webp" \
               -o "build/anatomy/assets/$key.webp"
           done
+          curl --fail --location --retry 3 --connect-timeout 15 --max-time 90 \
+            "https://raw.githubusercontent.com/wheresryan22/anatomy/$ANATOMY_REV/LICENSE" \
+            -o build/anatomy/LICENSE_ANATOMY.txt
           python - <<'PY'
           from pathlib import Path
           from PIL import Image
@@ -90,6 +93,7 @@ jobs:
           path: |
             build/anatomy/Anatomy_Official_Morph_Spike.pptx
             build/anatomy/assets/*.webp
+            build/anatomy/LICENSE_ANATOMY.txt
             build/anatomy/stills/4_shot_static_contact_sheet.png
             build/anatomy/stills/frame-*.png
           retention-days: 14
