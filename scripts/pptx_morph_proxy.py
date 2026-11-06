@@ -9,7 +9,7 @@ and timing are NOT reproduced, so this can only FAIL a design, never prove it wo
 
   python scripts/pptx_morph_proxy.py deck.pptx proxy.pptx --steps 3
 Output: slide 1, N in-between frames, slide 2, N frames, ... Each proxy frame carries a PROXY label.
-Supports shapes, freeforms and text boxes (not pictures/groups).
+Supports shapes, freeforms, text boxes and pictures (not groups). Pictures that appear or vanish pop instead of fading.
 Requires: python-pptx
 """
 import argparse
@@ -18,10 +18,11 @@ from pathlib import Path
 
 from lxml import etree
 from pptx import Presentation
+from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.oxml.ns import qn
 from pptx.util import Emu, Pt
 
-KINDS = ("sp", "cxnSp")
+KINDS = ("sp", "cxnSp", "pic")
 
 
 def smoothstep(t):
@@ -49,6 +50,15 @@ def set_alpha(element, factor):
     alpha.set("val", str(int(max(0.0, min(1.0, current * factor)) * 100000)))
 
 
+def rebind_picture(el, new_slide, origin_slide):
+    """A copied p:pic must point at the image part through a relationship of the NEW slide."""
+    for blip in el.iter(qn("a:blip")):
+        rid = blip.get(qn("r:embed"))
+        if rid:
+            part = origin_slide.part.related_part(rid)
+            blip.set(qn("r:embed"), new_slide.part.relate_to(part, RT.IMAGE))
+
+
 def frame(prs, src, dst, t, label):
     e = smoothstep(t)
     new = prs.slides.add_slide(prs.slide_layouts[6])
@@ -62,19 +72,25 @@ def frame(prs, src, dst, t, label):
     s_map, d_map = named(src), named(dst)
     # objects only on the source fade out underneath; the destination slide's z-order wins for the rest
     for name, shp in s_map.items():
-        if name not in d_map and shp._element.tag.endswith("}sp"):
+        if name not in d_map and shp._element.tag.rsplit("}", 1)[-1] in KINDS:
             el = copy.deepcopy(shp._element)
-            set_alpha(el, 1 - e)
+            if el.tag.endswith("}pic"):
+                rebind_picture(el, new, src)
+            else:
+                set_alpha(el, 1 - e)
             tree.append(el)
     for shp in dst.shapes:
         if not shp._element.tag.rsplit("}", 1)[-1] in KINDS:
             continue
         el = copy.deepcopy(shp._element)
         other = s_map.get(shp.name)
+        if el.tag.endswith("}pic"):
+            rebind_picture(el, new, dst)
         tree.append(el)
         moved = [x for x in new.shapes if x._element is el][0]
         if other is None:
-            set_alpha(el, e)
+            if not el.tag.endswith("}pic"):
+                set_alpha(el, e)
             continue
         moved.left = Emu(int(lerp(other.left, shp.left, e)))
         moved.top = Emu(int(lerp(other.top, shp.top, e)))

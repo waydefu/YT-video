@@ -20,6 +20,7 @@ description: Use for native editable PowerPoint (.pptx) presentations with cinem
 
 - Deliverable is a formal, editable content deck whose transitions are continuous camera moves. It is NOT character animation. Read `docs/PPTX-SEAMLESS-EXPLAINER.md` first.
 - Model the deck as one world of panels; each slide is a camera pose. Use zoom-through (next slide lives inside a window of the previous one), pan, and pull-back reveal. Keep each zoom ratio <= ~3.5x, compensate font sizes so the focused panel reads at design size, split huge backgrounds (<~56 in) and hide seams.
+- Multi-slide decks: build them with `scripts/pptx_world.py` (panels, windows, frames; see `scripts/build_anatomy_explainer.py`). A zoom-through must be followed by a pull-back reveal; keep window width == frame width so the scale returns to 1; keep shapes under ~55 in.
 - Run `scripts/pptx_validate.py --readable ... --strict` and `scripts/pptx_morph_proxy.py` (geometry proxy: can reject a design, never prove it). PowerPoint playback and video export stay BLOCKED until actually observed.
 - Facts go in a source ledger and need human review before publishing.
 

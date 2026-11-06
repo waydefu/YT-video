@@ -102,6 +102,8 @@ class Ctx:
             if alpha is not None:
                 clr = shp._element.spPr.find(qn("a:solidFill"))[0]
                 etree.SubElement(clr, qn("a:alpha")).set("val", str(int(alpha * 100000)))
+        if shp._element.spPr.find(qn("a:effectLst")) is None:  # never inherit the theme's shadow
+            etree.SubElement(shp._element.spPr, qn("a:effectLst"))
         return shp
 
     def rect(self, name, p, lx, ly, lw, lh, fill=None, alpha=None, grad=None, kind=MSO_SHAPE.RECTANGLE):
