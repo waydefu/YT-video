@@ -1,0 +1,100 @@
+name: Anatomy native Morph sample
+on:
+  pull_request:
+    paths:
+      - 'scripts/anatomy_official_morph_spike.py'
+      - 'docs/ANATOMY-SPIKE-QA.md'
+      - '.github/workflows/anatomy-morph-spike.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-and-inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Install Python packages
+        run: python -m pip install --disable-pip-version-check "python-pptx==1.0.2" "Pillow==11.3.0"
+      - name: Fetch MIT-licensed original Anatomy screenshots from pinned commit
+        env:
+          ANATOMY_REV: 1482e8469b0a9e0d8cc18ea2740a01423d29ae80
+        run: |
+          set -euo pipefail
+          mkdir -p build/anatomy/assets
+          for key in raptor-engine-firing turning-dial ripple-tank; do
+            curl --fail --location --retry 3 --connect-timeout 15 --max-time 90 \
+              "https://raw.githubusercontent.com/wheresryan22/anatomy/$ANATOMY_REV/.github/assets/$key.webp" \
+              -o "build/anatomy/assets/$key.webp"
+          done
+          curl --fail --location --retry 3 --connect-timeout 15 --max-time 90 \
+            "https://raw.githubusercontent.com/wheresryan22/anatomy/$ANATOMY_REV/LICENSE" \
+            -o build/anatomy/LICENSE_ANATOMY.txt
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          assets=list(Path("build/anatomy/assets").glob("*.webp"))
+          assert len(assets)==3
+          for p in assets:
+              im=Image.open(p);im.load()
+              assert im.width>=640 and im.height>=600,(p,im.size)
+              print(p,im.size,p.stat().st_size)
+          PY
+      - name: Build editable PPTX with Office-native Morph
+        run: |
+          python scripts/anatomy_official_morph_spike.py \
+            --assets build/anatomy/assets \
+            --output build/anatomy/Anatomy_Official_Morph_Spike.pptx
+          python - <<'PY'
+          from pptx import Presentation
+          from zipfile import ZipFile
+          p="build/anatomy/Anatomy_Official_Morph_Spike.pptx"
+          assert len(Presentation(p).slides)==4
+          with ZipFile(p) as z:
+              slides=[n for n in z.namelist() if n.startswith("ppt/slides/slide") and n.endswith(".xml") and "/_rels/" not in n]
+              assert sum('p159:morph option="byObject"' in z.read(n).decode() for n in slides)==3
+          print("STRUCTURE PASS; real PowerPoint playback NOT RUN")
+          PY
+      - name: Render static frames and montage (not a Morph playback test)
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
+            libreoffice-impress poppler-utils fonts-noto-cjk >/dev/null
+          mkdir -p build/anatomy/stills
+          timeout 180s libreoffice -env:UserInstallation=file:///tmp/lo-anatomy-ci \
+            --headless --convert-to pdf --outdir build/anatomy/stills \
+            build/anatomy/Anatomy_Official_Morph_Spike.pptx
+          pdftoppm -r 85 -png \
+            build/anatomy/stills/Anatomy_Official_Morph_Spike.pdf \
+            build/anatomy/stills/frame
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image,ImageOps
+          files=sorted(Path("build/anatomy/stills").glob("frame-*.png"))
+          assert len(files)==4,files
+          w,h=720,405
+          canvas=Image.new("RGB",(w*2,h*2),"#E9EBE9")
+          for j,f in enumerate(files):
+              im=ImageOps.fit(Image.open(f).convert("RGB"),(w,h))
+              canvas.paste(im,((j%2)*w,(j//2)*h))
+          canvas.save("build/anatomy/stills/4_shot_static_contact_sheet.png",optimize=True)
+          print("STATIC QA: 4 rendered stills. Motion quality NOT VERIFIED.")
+          PY
+      - name: Upload PPTX, source screenshots and visual evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: anatomy-native-morph-spike
+          path: |
+            build/anatomy/Anatomy_Official_Morph_Spike.pptx
+            build/anatomy/assets/*.webp
+            build/anatomy/LICENSE_ANATOMY.txt
+            build/anatomy/stills/4_shot_static_contact_sheet.png
+            build/anatomy/stills/frame-*.png
+          retention-days: 14
+          if-no-files-found: error
