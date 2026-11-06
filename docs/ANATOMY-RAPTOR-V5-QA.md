@@ -53,10 +53,10 @@ CI 下載固定官方素材 → SHA256 校驗 → 產出 PPTX → XML / ZIP 與�
 | G1 來源和授權 | 本地 PASS；CI 待驗 | 固定原圖 SHA 與 MIT © 2026 Ryan |
 | G2 最小場景 | 本地 PASS | 4 頁／3 段原生 Morph 結構 |
 | A 結構 | 本地 PASS | 每頁 !!ENGINE、3 個 Morph、3 個 fade fallback、文字在畫布內、ZIP 與 XML 可解析 |
-| B 靜態視覺 | **本地已人工檢視修正** | v3、v4、v5 重排，去掉溢位與卡片遮擋；特寫的主圖有意越出畫布，文字沒有 |
+| B 靜態視覺 | **局部修復 PASS；對參考品質仍 FAIL** | v3、v4、v5 重排，四頁無切字或上一頁殘圖；但官方 900px 圖放大後欠缺參考片的精細運鏡與美術層次，尚不應交付 |
 | B 場景連續 | 代理插補模擬已檢 | 12 張幾何姿態，**並非** PowerPoint 影片 |
 | C PowerPoint **原生實播** | **BLOCKED / NOT RUN** | 目前無 Microsoft PowerPoint 播放環境；不能宣稱絲滑 |
-| D 實機手機／桌面 | **BLOCKED / NOT RUN** | 無目標播放器實播證據 |
+| D 手機靜態可讀性／實播 | **390px 靜態檢視；實播 BLOCKED** | 本地 390×219 縮圖檢查主要文字，並調整摘要成 21pt 短句；仍沒有 Microsoft PowerPoint 行動端實播證據 |
 | E 內容正確與權利 | 本地 PASS | 官方圖、授權、官方 SVG / WebGL / 3D beta 用語 |
 
 ### 尚未消除的風險
