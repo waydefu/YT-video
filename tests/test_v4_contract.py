@@ -16,7 +16,7 @@ class V4ContractTests(unittest.TestCase):
         self.assertIn("bpy.ops.import_scene.gltf", source)
         self.assertNotIn("def bust(", source)
         self.assertIn("if not meshes:", source)
-        self.assertIn('obj.hide_render', source)
+        self.assertIn('kf(obj, "hide_render"', source)
 
     def test_no_horizon_and_true_volume(self):
         source = SCENE.read_text()
