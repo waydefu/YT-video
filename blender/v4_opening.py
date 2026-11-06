@@ -310,8 +310,20 @@ if __name__=="__main__":
     p.add_argument("--asset",default="assets/external/marble_bust_01.glb")
     p.add_argument("--output",default="build/v4")
     p.add_argument("--render",action="store_true")
+    p.add_argument("--movie-preview",action="store_true",help="True 24fps 3D motion, 640x360 offline render")
     args=p.parse_args(argv)
     sc=build(os.path.abspath(args.asset),os.path.abspath(args.output))
+    if args.movie_preview:
+        # Actual independent Blender frames, not interpolated still images.
+        # Preview quality only; saved .blend is full 1920x1080 40-sample master.
+        sc.render.resolution_x=1280
+        sc.render.resolution_y=720
+        sc.render.resolution_percentage=50
+        sc.cycles.samples=6
+        sc.frame_step=1
+        sc.render.filepath=os.path.join(os.path.abspath(args.output),"movie_frames","frame_")
+        os.makedirs(os.path.dirname(sc.render.filepath),exist_ok=True)
+        bpy.ops.render.render(animation=True)
     if args.render:
         # PR smoke frames prioritize lighting/layout; .blend retains 40 samples.
         # 12-sample previews avoid paying full offline-quality cost per revision.
