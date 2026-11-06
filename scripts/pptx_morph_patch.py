@@ -32,6 +32,19 @@ def transition(duration, hold, first=False):
         '<p:fade/></p:transition></mc:Fallback></mc:AlternateContent>'
     )
 
+def insert_transition(xml, fragment):
+    """Place the transition where the schema wants it: after p:clrMapOvr and
+    before p:timing / p:extLst (PowerPoint may repair or drop a misplaced one)."""
+    match = re.search(r"<p:clrMapOvr\b[^>]*/>|<p:clrMapOvr\b[^>]*>.*?</p:clrMapOvr>", xml, re.S)
+    if match:
+        return xml[:match.end()] + fragment + xml[match.end():]
+    for marker in ("<p:timing", "<p:extLst", "</p:sld>"):
+        idx = xml.rfind(marker)
+        if idx != -1:
+            return xml[:idx] + fragment + xml[idx:]
+    raise RuntimeError("Cannot place transition: no p:sld end tag")
+
+
 def apply(src: Path, dest: Path, duration: int, hold: int, dedupe: bool = True):
     with ZipFile(src) as zin:
         parts = {name: zin.read(name) for name in zin.namelist()}
@@ -58,7 +71,7 @@ def apply(src: Path, dest: Path, duration: int, hold: int, dedupe: bool = True):
             seen_matched[i].add(key)
             return re.sub(r'\bname="[^"]*"', f'name="{key}"', tag)
         xml = re.sub(r"<p:cNvPr\b[^>]*>", rename, xml)
-        xml = xml.replace("</p:sld>", transition(duration, hold, first=(i == 0)) + "</p:sld>")
+        xml = insert_transition(xml, transition(duration, hold, first=(i == 0)))
         etree.fromstring(xml.encode("utf-8"))
         parts[path] = xml.encode("utf-8")
     duplicate_count = 0

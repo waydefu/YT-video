@@ -1,6 +1,15 @@
 # BROKE TRIO — YT-video
 
-繁中影音製作工作區，使用 **原創 3D 場景 + 音訊腳本 + FFmpeg** 產生可反覆維護的 YouTube 片頭。此 PR 包含可編輯的 Blender 程式化場景，**目前是未在 Blender 真正渲染／人工驗收的 V3 blockout**，不能當成已完成電影級作品。
+繁中影音製作工作區，涵蓋四條互相獨立的製作線；**沒有任何一條已是 FINAL-APPROVED**。
+
+| 製作線 | 狀態 | 阻擋點 |
+| --- | --- | --- |
+| Blender 片頭（V3 程序化 blockout → V4 授權大理石半身像 + 依序聚光燈） | SPIKE / PREVIEW：CI 可產生 smoke 幀與 24 fps 預覽，**尚未經人工美術驗收** | 需人工檢視畫面；崩解／重組段落尚未製作 |
+| Canva 動態簡報技巧庫 | RESEARCH：只有文件，**沒有做出任何 Canva 樣片** | 需先做 10–15 秒最難轉場樣片 |
+| PowerPoint Morph + Anatomy 官方素材 4 鏡頭 | SPIKE / CANDIDATE：結構與靜態由 CI 產出 | **PowerPoint 實播 BLOCKED** |
+| PowerPoint「Live 2D 式」動態層 + 原創 Living Scene | **SPIKE**：自動循環動畫已注入，結構測試通過 | **PowerPoint 實播 BLOCKED**；美術等級不足 |
+
+以下 Blender 段落描述原始 V3 設計；V4 的素材與時間線見 `docs/V4-ASSETS.md`。
 
 ## 這一版要做什麼
 
@@ -89,4 +98,24 @@ python3 scripts/pptx_morph_patch.py morph-draft.pptx morph-native.pptx --duratio
 python3 -m unittest discover -s tests -v
 ```
 
-**限制**：PPTX OOXML 結構可在 CI 驗證，但真正的 Morph 影格品質仍須在支援 Morph 的 PowerPoint 播放檢查；LibreOffice 靜態輸出不等於 Morph 通過。Anatomy 的 14 頁研究樣片目前以對話交付的 PPTX 與 source ZIP 為準，**不在此 PR 放未完成實播驗收的 final 二進位檔**。
+**限制**：PPTX OOXML 結構可在 CI 驗證，但真正的 Morph 影格品質仍須在支援 Morph 的 PowerPoint 播放檢查；LibreOffice 靜態輸出不等於 Morph 通過。本 repo 內實際可重現的 Anatomy 樣片是 **4 頁 / 3 段 Morph 的 spike**（`scripts/anatomy_official_morph_spike.py`，CI 產出，見 `docs/ANATOMY-SPIKE-QA.md`）；較早對話中提到的 14 頁研究樣片**不在此 repo**，也未經實播驗收。
+
+## 「Live 2D 式」自動播放動態層（簡報最高標準路線）
+
+簡報一開始播放，所有圖層就持續微動（呼吸、眨眼、髮絲擺動、漂浮、粒子、旋轉光芒），搭配 Morph 鏡頭與視差。**這是剛體 2D 變換，不是 Live2D 網格變形**；完整研究、能力邊界與工作流見 [`docs/PPTX-LIVE-MOTION.md`](docs/PPTX-LIVE-MOTION.md)。
+
+| 檔案 | 用途 |
+| --- | --- |
+| [`scripts/pptx_motion.py`](scripts/pptx_motion.py) | 標準庫工具：依名稱把 `breathe / sway / blink / float / orbit / spin` 寫成自動啟動、重複到投影片結束的 `p:timing` |
+| [`scripts/pptx_validate.py`](scripts/pptx_validate.py) | A 層驗證：XML 順序、ID 唯一、Morph 錨點、循環覆蓋率、換頁相位、文字安全區 |
+| [`scripts/build_living_scene.py`](scripts/build_living_scene.py) | 原創向量分層角色 + 3 鏡頭最小樣片（G2） |
+| [`tests/test_pptx_motion.py`](tests/test_pptx_motion.py) | 動態層與驗證器單元測試 |
+
+```bash
+pip install python-pptx==1.0.2
+python3 scripts/build_living_scene.py
+python3 scripts/pptx_validate.py build/living-scene/living-scene-spike.pptx --strict
+python3 -m unittest discover -s tests -v
+```
+
+**驗證狀態**：A 結構已本地測試；B 靜態已自查；**C 原生實播 NOT RUN（無 Microsoft PowerPoint）**。在 PowerPoint 實播並由使用者觀看前，一律只能稱 SPIKE。

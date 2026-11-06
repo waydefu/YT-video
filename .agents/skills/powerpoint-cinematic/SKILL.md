@@ -16,6 +16,13 @@ description: Use for native editable PowerPoint (.pptx) presentations with cinem
 9. Inspect static PNGs, verify slide count and XML, check deliberate off-canvas world images separately from accidental text overflow. **Do not claim successful native Morph playback without Microsoft PowerPoint render / manual review.** LibreOffice static previews are not playback evidence.
 10. Source facts and rights; do not merge PR, publish a deck as final, or upload a YouTube video without user approval. Show what was executed locally vs in CI vs not tested.
 
+## Live-motion layer (for "Live 2D-like" requests)
+
+- Read `docs/PPTX-LIVE-MOTION.md` first. State plainly that PowerPoint offers rigid 2D transforms, not Live2D mesh deformation/physics; never claim equivalence.
+- Name every animated part `!!NAME`; group swaying parts with an invisible pivot-weight shape so the group centre is the joint; give eyes their own group.
+- Run `scripts/pptx_morph_patch.py` first, then `scripts/pptx_motion.py` (it refuses slides that already have `p:timing`). Keep loop periods as divisors of the slide hold time.
+- Run `scripts/pptx_validate.py --hold-ms <hold> --strict`. It proves layer A only; playback in Microsoft PowerPoint (layer C) stays BLOCKED until a human or PowerPoint environment checks it.
+
 ## Minimal reproduction
 
 ```bash
@@ -32,4 +39,4 @@ PowerPoint: open `morph-native.pptx` → Slide Show → confirm camera-like moti
 - Different PowerPoint editions support Morph at different levels; test in a compatible Microsoft app.
 - The `mc:AlternateContent` namespace must remain correctly scoped, with a fade fallback.
 - Large panorama images intentionally extend beyond slide bounds, and this is not necessarily a layout bug.
-- A working deck containing 13 Morph tags has only passed **OOXML structural verification** until actual playback is reviewed.
+- A working deck containing Morph tags and `p:timing` loops has only passed **OOXML structural verification** until actual playback is reviewed.

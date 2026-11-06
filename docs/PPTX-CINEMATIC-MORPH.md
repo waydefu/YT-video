@@ -2,6 +2,8 @@
 
 > 2026-11-06｜適用 `waydefu/YT-video`｜狀態：**OOXML 及靜態畫面經本地驗證；Microsoft PowerPoint Morph 實播未驗證**。與既有 Blender 片頭、Canva 技巧庫分開；不得把 MP4 冒充 PPTX 原生轉場。
 
+> **要做「簡報一播放就像 Live 2D」的連續待機動作，請接著讀 [`PPTX-LIVE-MOTION.md`](PPTX-LIVE-MOTION.md)**（自動播放循環動態層、驗證器與能力邊界）。本檔專注於 Morph 轉場配方。
+
 ## 目標與技術選擇
 
 這個工作流交付真正的可編輯 `.pptx`：一張連續的大場景在相鄰投影片中透過同一物件名稱追蹤、平移和縮放；標題與資訊依然是 PowerPoint 原生文字框。**不產生替代的 HTML 動畫 / MP4 作為正式交付。**

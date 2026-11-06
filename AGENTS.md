@@ -27,4 +27,5 @@ Do not treat automated resolution tests as proof of acceptable framing. Review f
 Lighting contract: LEFT completes and turns off BEFORE RIGHT starts; BOTH off before statue enters smoke.
 User review required for imagery, motion, audio levels, factual statements and final YouTube publication.
 Never silently upgrade scope, enable services, download external binaries, or use credentials based on research documents.
+Presentations: read `docs/PPTX-LIVE-MOTION.md` and `docs/PPTX-CINEMATIC-MORPH.md`; never claim Live2D equivalence for PowerPoint rigid 2D loops; PowerPoint playback (layer C) stays BLOCKED/NOT RUN until actually observed.
 Test statements must say whether checked in CI, locally, or not run.
