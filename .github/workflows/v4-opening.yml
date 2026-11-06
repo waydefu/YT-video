@@ -18,12 +18,14 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Check Blender source and timeline contract
         run: python3 -m unittest discover -s tests -v
-      - name: Install Blender (bounded)
+      - name: Install official Blender 4.2.23 LTS (cached release archive)
+        uses: BradyAJohnston/setup-blender@1006ec809db1af1422bd1197e107e2c4d368d81e # v5 pinned commit, version fixed
+        with:
+          version: '4.2.23'
+      - name: Verify bundled Blender and glTF NumPy
         run: |
-          timeout --kill-after=15s 240s sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq -o Acquire::Retries=1
-          timeout --kill-after=15s 540s sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends blender python3-numpy
           blender --version
-          blender -b -t 1 --python-expr 'import numpy; print("Blender numpy:",numpy.__version__)'
+          blender -b -t 1 --python-expr 'import bpy, numpy; print("Bundled numpy:",numpy.__version__); assert bpy.app.version >= (4,2,0)'
       - name: Download authenticated-source CC0 photogrammetry mesh
         run: python3 scripts/fetch_cc0_bust.py --output assets/external/marble_bust_01.glb
       - name: Render five true 3D cinematic keyframes
