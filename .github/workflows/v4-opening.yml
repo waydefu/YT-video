@@ -13,7 +13,7 @@ permissions:
 jobs:
   opening-smoke:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 38
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Check Blender source and timeline contract
@@ -21,7 +21,7 @@ jobs:
       - name: Install Blender (bounded)
         run: |
           timeout --kill-after=15s 240s sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq -o Acquire::Retries=1
-          timeout --kill-after=15s 360s sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends blender python3-numpy
+          timeout --kill-after=15s 540s sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends blender python3-numpy
           blender --version
           blender -b -t 1 --python-expr 'import numpy; print("Blender numpy:",numpy.__version__)'
       - name: Download authenticated-source CC0 photogrammetry mesh
