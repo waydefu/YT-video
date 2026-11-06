@@ -57,3 +57,16 @@ bash scripts/render.sh final
 | [`.agents/skills/canva-cinematic/SKILL.md`](.agents/skills/canva-cinematic/SKILL.md) | 後續 AI 代理製作或審查 Canva 影片時使用的標準流程 |
 
 **使用順序**：先讀手冊與技巧索引 → 選 1–2 個轉場配方做短片段 → Canva 預覽 / MP4 輸出 → 桌面及手機實測 → 資產權利檢查 → 使用者批准。不能把參考片影格、未經授權的音樂或字型上傳到此專案。
+
+## 品質優先的統一製作流程（所有媒介）
+
+本 repo 後續影像、Canva / PPTX 動態簡報、Blender、網站／互動及相關程式的共同工作流程：
+
+**交付契約 → 品質與授權素材 → 最小可驗證樣片 → 自己先實際驗收 → 不合格重做 → 通過才擴大 → 提交可查證 PR。**
+
+- [完整規範：`docs/QUALITY-GATED-WORKFLOW.md`](docs/QUALITY-GATED-WORKFLOW.md)
+- [共用 AI 技能：`.agents/skills/quality-gated-production/SKILL.md`](.agents/skills/quality-gated-production/SKILL.md)
+- [PR 驗收表：`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md)
+
+**驗收準則**：CI／檔案結構檢查、靜態畫格、原生動畫實播、桌機／手機體驗、素材授權各自分開回報。沒有目標軟體能播放，就只能標記未驗證，不能宣稱已達到參考影片品質。先做 10–15 秒最難轉場，通過後才擴張長片；純文件改動則使用比例適當的文字／連結檢查。
+
