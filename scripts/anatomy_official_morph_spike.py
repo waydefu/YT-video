@@ -163,7 +163,7 @@ def main():
         sl.notes_slide.notes_text_frame.text=(
             '官方示範圖：wheresryan22/anatomy；MIT License，Copyright (c) 2026 Ryan。'
             ' 本 PPT 僅使用原始靜態範例圖作連續鏡頭特寫，並非實際可互動 Anatomy 動畫。'
-            ' PowerPoint 原生 Morph 實播狀態：NOT RUN。\\n\\n' + license_text)
+            ' PowerPoint 原生 Morph 實播狀態：NOT RUN。\n\n' + license_text)
     arg.output.parent.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory() as d:
         draft=Path(d)/'draft.pptx';p.save(draft)
