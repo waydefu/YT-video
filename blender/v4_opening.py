@@ -158,11 +158,54 @@ def spotlight_scattering_volume(name, lamp_xyz, target_xyz, cone_angle, visibili
     ramp.color_ramp.elements[1].position = .75
     mul = n.new("ShaderNodeMath")
     mul.operation = "MULTIPLY"
-    mul.inputs[1].default_value = .23
+    mul.inputs[1].default_value = .29
+
+    # Feather the scattering medium spatially to zero at the *real* cone
+    # boundary; otherwise a hard-edged geometric wedge is visible on camera.
+    coords = n.new("ShaderNodeTexCoord")
+    xyz = n.new("ShaderNodeSeparateXYZ")
+    dx = n.new("ShaderNodeMath"); dx.operation = "SUBTRACT"; dx.inputs[1].default_value = .5
+    dy = n.new("ShaderNodeMath"); dy.operation = "SUBTRACT"; dy.inputs[1].default_value = .5
+    sx = n.new("ShaderNodeMath"); sx.operation = "MULTIPLY"
+    sy = n.new("ShaderNodeMath"); sy.operation = "MULTIPLY"
+    sumsq = n.new("ShaderNodeMath"); sumsq.operation = "ADD"
+    radial = n.new("ShaderNodeMath"); radial.operation = "SQRT"
+    one_minus_z = n.new("ShaderNodeMath"); one_minus_z.operation = "SUBTRACT"
+    one_minus_z.inputs[0].default_value = 1.0
+    maxrad = n.new("ShaderNodeMath"); maxrad.operation = "MULTIPLY"
+    maxrad.inputs[1].default_value = .5
+    safe_rad = n.new("ShaderNodeMath"); safe_rad.operation = "MAXIMUM"
+    safe_rad.inputs[1].default_value = .025
+    relative_radius = n.new("ShaderNodeMath"); relative_radius.operation = "DIVIDE"
+    feather = n.new("ShaderNodeValToRGB")
+    feather.color_ramp.interpolation = "EASE"
+    feather.color_ramp.elements[0].position = .48
+    feather.color_ramp.elements[0].color = (1,1,1,1)
+    feather.color_ramp.elements[1].position = .96
+    feather.color_ramp.elements[1].color = (0,0,0,1)
+    feathered_density = n.new("ShaderNodeMath")
+    feathered_density.operation = "MULTIPLY"
+
     link = m.node_tree.links
     link.new(noise.outputs["Fac"],ramp.inputs["Fac"])
     link.new(ramp.outputs["Color"],mul.inputs[0])
-    link.new(mul.outputs[0],volume.inputs["Density"])
+    link.new(coords.outputs["Generated"],xyz.inputs["Vector"])
+    link.new(xyz.outputs["X"],dx.inputs[0])
+    link.new(xyz.outputs["Y"],dy.inputs[0])
+    link.new(dx.outputs[0],sx.inputs[0]); link.new(dx.outputs[0],sx.inputs[1])
+    link.new(dy.outputs[0],sy.inputs[0]); link.new(dy.outputs[0],sy.inputs[1])
+    link.new(sx.outputs[0],sumsq.inputs[0])
+    link.new(sy.outputs[0],sumsq.inputs[1])
+    link.new(sumsq.outputs[0],radial.inputs[0])
+    link.new(xyz.outputs["Z"],one_minus_z.inputs[1])
+    link.new(one_minus_z.outputs[0],maxrad.inputs[0])
+    link.new(maxrad.outputs[0],safe_rad.inputs[0])
+    link.new(radial.outputs[0],relative_radius.inputs[0])
+    link.new(safe_rad.outputs[0],relative_radius.inputs[1])
+    link.new(relative_radius.outputs[0],feather.inputs["Fac"])
+    link.new(mul.outputs[0],feathered_density.inputs[0])
+    link.new(feather.outputs["Color"],feathered_density.inputs[1])
+    link.new(feathered_density.outputs[0],volume.inputs["Density"])
     link.new(volume.outputs["Volume"],output.inputs["Volume"])
     ob.data.materials.append(m)
     kf(ob,"hide_render",visibility)
