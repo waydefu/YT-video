@@ -114,7 +114,8 @@ python3 -m unittest discover -s tests -v
 ```bash
 pip install python-pptx==1.0.2
 python3 scripts/build_living_scene.py
-python3 scripts/pptx_validate.py build/living-scene/living-scene-spike.pptx --strict
+python3 scripts/pptx_validate.py build/living-scene/living-scene-spike.pptx --hold-ms 2400 --spin-symmetry-deg 22.5 --strict
+python3 scripts/build_living_scene.py --static --output build/living-scene/living-scene-static.pptx   # 降級版：無循環動態
 python3 -m unittest discover -s tests -v
 ```
 

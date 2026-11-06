@@ -148,13 +148,17 @@ class MotionTests(unittest.TestCase):
                                          ["cSld", "clrMapOvr", "AlternateContent", "timing"]))
 
             class Args:
-                min_loops, hold_ms, edge = 3, 4800, 0.05
+                min_loops, hold_ms, edge, min_font, spin_symmetry_deg = 3, 4800, 0.05, 14, 0
             rep = VALIDATE.validate(c, Args)
             self.assertEqual(rep["fails"], [], rep["fails"])
             self.assertEqual(rep["loops"], {1: 6, 2: 6})
             self.assertEqual(rep["morph"], 1)
             # 24000 ms spin does not divide a 4800 ms hold -> flagged? 4800 % 24000 != 0
             self.assertTrue(any("do not divide hold" in w for w in rep["warns"]))
+            # 24000 ms spin = 360 deg; per 4800 ms hold that is 72 deg = not a multiple of 45 deg
+            Args.spin_symmetry_deg = 72.0  # symmetric art repeating every 72 deg is identical at each cut
+            rep2 = VALIDATE.validate(c, Args)
+            self.assertFalse(any("24000" in w for w in rep2["warns"]), rep2["warns"])
 
     def test_validator_flags_misordered_and_dead_slides(self):
         with TemporaryDirectory() as d:
@@ -162,7 +166,7 @@ class MotionTests(unittest.TestCase):
             deck(a)
 
             class Args:
-                min_loops, hold_ms, edge = 3, 0, 0.05
+                min_loops, hold_ms, edge, min_font, spin_symmetry_deg = 3, 0, 0.05, 14, 0
             rep = VALIDATE.validate(a, Args)
             self.assertEqual(rep["dead"], [1, 2])
             self.assertTrue(any("no p159:morph" in f for f in rep["fails"]))
@@ -170,6 +174,26 @@ class MotionTests(unittest.TestCase):
                                  capture_output=True, text=True)
             self.assertEqual(cli.returncode, 1)
             self.assertIn("FAIL", cli.stdout)
+
+
+class ReadabilityTests(unittest.TestCase):
+    def test_small_text_is_flagged(self):
+        with TemporaryDirectory() as d:
+            path = Path(d) / "a.pptx"
+            deck(path, slides=1)
+            with ZipFile(path) as z:
+                parts = {n: z.read(n) for n in z.namelist()}
+            xml = parts["ppt/slides/slide1.xml"].decode()
+            xml = xml.replace("<a:r><a:t>Hi</a:t></a:r>", '<a:r><a:rPr sz="1000"/><a:t>Tiny</a:t></a:r>')
+            parts["ppt/slides/slide1.xml"] = xml.encode()
+            with ZipFile(path, "w") as z:
+                for n, b in parts.items():
+                    z.writestr(n, b)
+
+            class Args:
+                min_loops, hold_ms, edge, min_font, spin_symmetry_deg = 0, 0, 0.05, 14, 0
+            rep = VALIDATE.validate(path, Args)
+            self.assertTrue(any("'Tiny' is 10 pt" in w for w in rep["warns"]), rep["warns"])
 
 
 if __name__ == "__main__":

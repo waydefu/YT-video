@@ -30,7 +30,7 @@ jobs:
       - name: Build original-vector living-scene spike
         run: python scripts/build_living_scene.py --output build/living-scene/living-scene-spike.pptx
       - name: Validate structure (layer A only; not PowerPoint playback)
-        run: python scripts/pptx_validate.py build/living-scene/living-scene-spike.pptx --min-loops 3 --strict
+        run: python scripts/pptx_validate.py build/living-scene/living-scene-spike.pptx --min-loops 3 --hold-ms 2400 --spin-symmetry-deg 22.5 --strict
       - name: Render static stills (layer B; NOT a Morph or animation playback test)
         run: |
           set -euo pipefail

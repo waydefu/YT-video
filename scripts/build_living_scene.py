@@ -43,10 +43,10 @@ C = dict(bg="151A33", ray="1C2350", far="262F63", mid="313D7A", near="1B2147",
 SHOTS = [  # (camera x, camera y, zoom, caption, label)
     (4.6, 3.6, 1.00, "01 · 全景：背景與角色同時在動", "WIDE"),
     (4.6, 2.75, 2.70, "02 · 特寫：眨眼、髮絲、呼吸", "PUSH-IN"),
-    (9.6, 3.3, 1.15, "03 · 平移：多層視差與漂浮", "PAN"),
+    (9.6, 3.0, 1.15, "03 · 平移：多層視差與漂浮", "PAN"),
 ]
 CAM0 = SHOTS[0][:3]
-HOLD_MS, MORPH_MS = 4800, 1400
+HOLD_MS, MORPH_MS = 2400, 1200  # reference runs ~1.5-2 s holds + ~1-1.3 s moves per slide (frame review)
 
 
 class Camera:
@@ -164,8 +164,8 @@ def build_slide(prs, idx, shot):
     s = Scene(sl, Camera(shot))
     sh = sl.shapes
     s.poly(sh, "!!BG", [(-2.8, -2.5), (14.8, -2.5), (14.8, 9.6), (-2.8, 9.6)], C["bg"], depth=0.15)
-    # sunburst: 16 symmetric rays; spin period (19200 ms) = quarter turn per 4800 ms hold,
-    # and 90 deg is 4 x the 22.5 deg pattern period, so the pattern is identical at each cut.
+    # sunburst: 16 symmetric rays; spin period 19200 ms = 45 deg per 2400 ms hold,
+    # and 45 deg is 2 x the 22.5 deg pattern period, so the pattern is identical at each cut.
     rays = s.group("!!RAYS")
     for j in range(16):
         a0, a1 = math.radians(j * 22.5), math.radians(j * 22.5 + 11.25)
@@ -220,9 +220,9 @@ def build_slide(prs, idx, shot):
     # ---- HUD (identical `!!` names stay fixed across Morph; captions are per-slide) ----
     sl_w = Scene(sl, Camera((W / 2, H / 2, 1.0, "", "")))
     sl_w.text(sh, "!!HUD_TITLE", "會呼吸的簡報", 0.85, 0.5, 6.0, 0.55, 24, C["cream"], bold=True)
-    sl_w.text(sh, "!!HUD_SUB", "LIVING DECK  ·  NATIVE MORPH + AUTOPLAY LOOPS  ·  SPIKE", 0.85, 1.05, 8.0, 0.3, 11, C["gold"])
+    sl_w.text(sh, "!!HUD_SUB", "LIVING DECK  ·  SPIKE", 0.85, 1.05, 5.0, 0.35, 14, C["gold"])
     sl_w.text(sh, f"CAPTION_{idx + 1}", shot[3], 0.85, 6.5, 8.0, 0.35, 15, C["cream"])
-    sl_w.text(sh, f"LABEL_{idx + 1}", shot[4], 10.6, 6.5, 1.9, 0.35, 12, C["gold"], align=PP_ALIGN.RIGHT)
+    sl_w.text(sh, f"LABEL_{idx + 1}", shot[4], 10.6, 6.5, 1.9, 0.35, 14, C["gold"], align=PP_ALIGN.RIGHT)
     for j in range(3):
         bar = sh.add_shape(MSO_SHAPE.RECTANGLE, Emu(int((0.85 + j * 0.7) * EMU)), Emu(int(6.4 * EMU)),
                            Emu(int(0.56 * EMU)), Emu(int(0.03 * EMU)))
@@ -242,21 +242,21 @@ def motion_spec():
         rows = [
             {"target": "!!RAYS", "effect": "spin", "period_ms": 19200},
             {"target": "!!BODY", "effect": "breathe", "amplitude": 1.2, "period_ms": 2400},
-            {"target": "!!HEAD", "effect": "sway", "degrees": 1.6, "period_ms": 4800},
+            {"target": "!!HEAD", "effect": "sway", "degrees": 1.6, "period_ms": 2400},
             {"target": "!!EYE_L", "effect": "blink", "period_ms": 2400, "close_ms": 70, "closed_pct": 8},
             {"target": "!!EYE_R", "effect": "blink", "period_ms": 2400, "close_ms": 70, "closed_pct": 8},
             {"target": "!!HAIR_L", "effect": "sway", "degrees": 3.0, "period_ms": 2400},
             {"target": "!!HAIR_R", "effect": "sway", "degrees": 3.0, "period_ms": 2400, "clockwise": False},
             {"target": "!!SIGN", "effect": "float", "dy_in": round(0.07 * k, 3), "period_ms": 2400},
         ]
-        for j, (period, rx) in enumerate([(4800, .10), (2400, .06), (4800, .14), (1600, .05), (2400, .08), (4800, .09)]):
+        for j, (period, rx) in enumerate([(2400, .10), (1200, .06), (2400, .14), (1200, .05), (2400, .08), (1200, .09)]):
             rows.append({"target": f"!!P{j:02d}", "effect": "orbit", "period_ms": period,
                          "rx_in": round(rx * k, 3), "ry_in": round(rx * 0.6 * k, 3), "clockwise": j % 2 == 0})
         slides[str(i + 1)] = rows
     return {"slides": slides}
 
 
-def build(output, hold=HOLD_MS, duration=MORPH_MS):
+def build(output, hold=HOLD_MS, duration=MORPH_MS, static=False):
     prs = Presentation()
     prs.slide_width, prs.slide_height = Emu(int(W * EMU)), Emu(int(H * EMU))
     for i, shot in enumerate(SHOTS):
@@ -266,7 +266,11 @@ def build(output, hold=HOLD_MS, duration=MORPH_MS):
         draft, morph = Path(d) / "draft.pptx", Path(d) / "morph.pptx"
         prs.save(draft)
         pptx_morph_patch.apply(draft, morph, duration, hold, dedupe=True)
-        report = pptx_motion.apply(morph, output, spec)
+        if static:  # poster / reduced-motion fallback: Morph camera only, no looping layer
+            Path(output).write_bytes(morph.read_bytes())
+            report = {}
+        else:
+            report = pptx_motion.apply(morph, output, spec)
     output.with_suffix(".motion.json").write_text(json.dumps(spec, ensure_ascii=False, indent=1), encoding="utf-8")
     return report
 
@@ -276,9 +280,10 @@ def main():
     ap.add_argument("--output", type=Path, default=Path("build/living-scene/living-scene-spike.pptx"))
     ap.add_argument("--hold", type=int, default=HOLD_MS)
     ap.add_argument("--duration", type=int, default=MORPH_MS)
+    ap.add_argument("--static", action="store_true", help="reduced-motion fallback: no looping layer")
     args = ap.parse_args()
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    report = build(args.output, args.hold, args.duration)
+    report = build(args.output, args.hold, args.duration, args.static)
     print(f"{args.output}: {len(SHOTS)} slides, {sum(map(len, report.values()))} looping effects "
           f"(SPIKE; PowerPoint playback NOT RUN)")
 

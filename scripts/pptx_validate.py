@@ -104,6 +104,11 @@ def check_slide(name, xml, number, total, args, report):
                 if row.get("repeatCount") == "indefinite":
                     loops += 1
                     it = iteration_ms(row)
+                    spin = any(abs(int(r.get("by", "0"))) == 21600000 for r in row.iter(q(P, "animRot")))
+                    if spin and it and args.hold_ms and args.spin_symmetry_deg:
+                        turned = 360.0 * args.hold_ms / it
+                        if abs(turned / args.spin_symmetry_deg - round(turned / args.spin_symmetry_deg)) < 1e-6:
+                            continue  # rotationally symmetric art looks identical at every cut
                     if it:
                         iterations.append(it)
                 else:
@@ -122,6 +127,12 @@ def check_slide(name, xml, number, total, args, report):
         if off:
             warns.append(f"{name}: loop periods {off} ms do not divide hold {args.hold_ms} ms — "
                          "poses will be mid-cycle when the next Morph starts (possible visual pop)")
+    # readability: tiny text is unreadable on phones / recordings
+    for run in root.iter(q(A, "r")):
+        rpr, txt = run.find(q(A, "rPr")), run.find(q(A, "t"))
+        if rpr is not None and txt is not None and (txt.text or "").strip() and (rpr.get("sz") or "").isdigit():
+            if int(rpr.get("sz")) < args.min_font * 100:
+                warns.append(f"{name}: '{txt.text.strip()[:20]}' is {int(rpr.get('sz')) / 100:g} pt (< {args.min_font} pt)")
     # text safe area
     size = report["size"]
     for sp in root.iter(q(P, "sp")):
@@ -175,6 +186,9 @@ def main():
     ap.add_argument("deck", type=Path)
     ap.add_argument("--min-loops", type=int, default=3)
     ap.add_argument("--hold-ms", type=int, default=0)
+    ap.add_argument("--spin-symmetry-deg", type=float, default=0,
+                    help="pattern repeat angle of spinning art (e.g. 22.5 for 16 alternating rays)")
+    ap.add_argument("--min-font", type=float, default=14, help="warn below this pt size")
     ap.add_argument("--edge", type=float, default=0.05, help="text edge-safe margin (fraction)")
     ap.add_argument("--strict", action="store_true", help="treat WARN and safe-area as FAIL")
     ap.add_argument("--json", action="store_true")
