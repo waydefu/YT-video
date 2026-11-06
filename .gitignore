@@ -1,0 +1,11 @@
+build/
+*.blend1
+*.blend2
+__pycache__/
+*.pyc
+.DS_Store
+.cache/
+*.wav
+*.mp4
+*.mov
+!samples/.gitkeep
