@@ -2,6 +2,7 @@
 
 Work on an explicit topic branch and open a PR; never merge or publish automatically.
 Keep user references separate from footage. Only original/properly licensed media may ship.
+Prefer pre-existing high-quality, provenance-verifiable, commercially permitted 3D assets over procedural anatomical modelling; use original geometry only when visual review shows it meets the brief.
 No borrowed screenshots, reference images, meshes, music, fonts, or external assets without a rights record.
 Never represent keyframed particle approximations as true rigid-body or fluid simulations.
 Never call an image sequence or composited poster a 3-D animation without actual spatial geometry.

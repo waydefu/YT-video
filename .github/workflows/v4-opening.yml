@@ -1,0 +1,44 @@
+name: V4 marble hero and sequential lighting smoke
+on:
+  pull_request:
+    paths:
+      - "blender/v4_opening.py"
+      - "scripts/fetch_cc0_bust.py"
+      - "tests/test_v4_contract.py"
+      - ".github/workflows/v4-opening.yml"
+      - "docs/V4-ASSETS.md"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  opening-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 38
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Check Blender source and timeline contract
+        run: python3 -m unittest discover -s tests -v
+      - name: Install official Blender 4.2.23 LTS (cached release archive)
+        uses: BradyAJohnston/setup-blender@1006ec809db1af1422bd1197e107e2c4d368d81e # v5 pinned commit, version fixed
+        with:
+          version: '4.2.23'
+      - name: Verify bundled Blender and glTF NumPy
+        run: |
+          blender --version
+          blender -b -t 1 --python-expr 'import bpy, numpy; print("Bundled numpy:",numpy.__version__); assert bpy.app.version >= (4,2,0)'
+      - name: Download authenticated-source CC0 photogrammetry mesh
+        run: python3 scripts/fetch_cc0_bust.py --output assets/external/marble_bust_01.glb
+      - name: Render five true 3D cinematic keyframes
+        run: |
+          blender -b -t 2 --python blender/v4_opening.py -- --asset assets/external/marble_bust_01.glb --output build/v4 --render
+          test -s build/v4/BROKE_TRIO_V4_opening.blend
+          test "$(find build/v4/shots -type f -name '*.png' | wc -l)" -eq 5
+      - name: Upload render for human composition review
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: broke-trio-v4-cc0-opening-checkpoints
+          path: |
+            build/v4/shots/*.png
+            build/v4/*.blend
+          retention-days: 7
+          if-no-files-found: error

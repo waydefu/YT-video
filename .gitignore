@@ -9,3 +9,6 @@ __pycache__/
 *.mp4
 *.mov
 !samples/.gitkeep
+
+assets/external/
+build/v4/
