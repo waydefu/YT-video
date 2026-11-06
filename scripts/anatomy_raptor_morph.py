@@ -43,16 +43,16 @@ MORPH_DURATION = 1800                  # transition milliseconds
 POSES = [
     dict(x=5.00, y=-2.65, h=15.10, scene="01", kicker="DETAIL / CLOSE-UP",
          a="一個細節，", b="藏著整套系統。",
-         note="從零件的形狀開始，讀懂背後的運作原理。"),
+         note="從零件，看見運作原理。"),
     dict(x=6.47, y=0.34, h=6.42, scene="02", kicker="REVEAL / PULL BACK",
          a="拉遠一步，", b="全貌就出現。",
-         note="同一個物件，從局部特寫回到完整結構。"),
+         note="從局部，理解整體。"),
     dict(x=6.92, y=-1.48, h=11.62, scene="03", kicker="INSPECT / MOVE CLOSER",
          a="看清連接，", b="才理解運作。",
-         note="鏡頭沿著零件推進，視覺錨點不切換。"),
+         note="沿著結構，追蹤運作。"),
     dict(x=6.16, y=0.29, h=6.72, scene="04", kicker="FINALE / WIDE SHOT",
          a="Anatomy", b="讓抽象，變具體。",
-         note="互動 SVG  ·  WebGL 特效  ·  3D Beta"),
+         note="SVG · WebGL · 3D Beta"),
 ]
 
 
@@ -175,7 +175,7 @@ def slide(ppt, pose, paper_path: Path, engine_path: Path, license_text: str, ind
               1.18, 3.26, 4.58, .92, 39, face=SERIF)
     bar(page, "!!SPLIT_LINE", 1.21, 4.47, .76, .017, COPPER)
     label(page, "DESC_"+pose["scene"], pose["note"],
-          1.18, 4.69, 4.63, .53, 15, SUB)
+          1.18, 4.69, 4.63, .53, 21, SUB)
     label(page, "!!SOURCE",
           "SOURCE  /  WHERESRYAN22 · MIT © 2026 RYAN",
           1.18, 6.74, 6.0, .27, 9, MUTED)
