@@ -270,6 +270,9 @@ if __name__=="__main__":
     args=p.parse_args(argv)
     sc=build(os.path.abspath(args.asset),os.path.abspath(args.output))
     if args.render:
+        # PR smoke frames prioritize lighting/layout; .blend retains 40 samples.
+        # 12-sample previews avoid paying full offline-quality cost per revision.
+        sc.cycles.samples=12
         os.makedirs(sc.render.filepath.rsplit("/",1)[0],exist_ok=True)
         for f in (14,39,69,101,127):
             sc.frame_set(f)
