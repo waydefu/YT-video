@@ -191,6 +191,13 @@ def build(asset, output):
     bpy.context.view_layer.cycles.use_denoising=False
     scene.render.film_transparent=False
     scene.world.color=(0,0,0)
+    # A black "world.color" does NOT override a node-based world background.
+    # Set both explicitly; previous smoke frames rendered uniformly gray.
+    scene.world.use_nodes=True
+    world_background=scene.world.node_tree.nodes.get("Background")
+    if world_background:
+        world_background.inputs["Color"].default_value=(0,0,0,1)
+        world_background.inputs["Strength"].default_value=0.0
     scene.render.resolution_x=1920
     scene.render.resolution_y=1080
     scene.render.resolution_percentage=50
