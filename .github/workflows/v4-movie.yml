@@ -16,11 +16,20 @@ jobs:
         uses: BradyAJohnston/setup-blender@1006ec809db1af1422bd1197e107e2c4d368d81e # v5 fixed SHA
         with:
           version: '4.2.23'
-      - name: Verify Blender and FFmpeg
+      - name: Set up cached static FFmpeg and FFprobe binaries
+        uses: FedericoCarboni/setup-ffmpeg@37062fbf7149fc5578d6c57e08aed62458b375d6 # v3.1 full SHA
+        with:
+          ffmpeg-version: release
+      - name: Verify Blender and FFmpeg executable and encoders
         run: |
+          set -euo pipefail
           blender --version
-          ffmpeg -version | head -n 1
-          ffprobe -version | head -n 1
+          command -v ffmpeg
+          command -v ffprobe
+          ffmpeg -hide_banner -version | head -n 1
+          ffprobe -hide_banner -version | head -n 1
+          ffmpeg -hide_banner -encoders | grep -q libx264
+          ffmpeg -hide_banner -encoders | grep -q aac
       - name: Fetch SHA256 pinned Poly Haven CC0 marble bust
         run: python3 scripts/fetch_cc0_bust.py --output assets/external/marble_bust_01.glb
       - name: Render every single frame as original 3-D Blender image
@@ -29,6 +38,16 @@ jobs:
           test "$(find build/v4/movie_frames -maxdepth 1 -type f -name '*.png' | wc -l)" -eq 150
       - name: Create original stereo cinematic intro soundscape
         run: python3 scripts/v4_opening_audio.py build/v4/opening.wav
+      - name: Back up all 150 raw 3D frames, .blend, and WAV before encoding
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: BROKE_TRIO_V4_raw_frames_and_audio
+          path: |
+            build/v4/movie_frames/*.png
+            build/v4/*.blend
+            build/v4/*.wav
+          retention-days: 7
+          if-no-files-found: error
       - name: Encode actual Blender motion with original audio
         run: |
           ffmpeg -hide_banner -loglevel error -nostdin -y \
