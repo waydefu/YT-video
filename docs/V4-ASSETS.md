@@ -7,7 +7,7 @@
 - Asset type: real 3D modeled/scanned sculpture, PBR materials; **not** generated from the chat reference images.
 - Downloaded as 1.9 MB self-contained GLB from [Innerscene mirror](https://www.innerscene.com/tools/library/3d-parts/marble-bust-f5604fc9), which identifies the original Poly Haven author/source and CC0.
 - Use `python3 scripts/fetch_cc0_bust.py` on GitHub Actions to get the binary, then import into Blender. Keep external mesh out of git initially.
-- Pin content SHA-256 after first successful CI retrieval and human review. Never silently replace a CC0 mesh with a different model if the network fails.
+- Verified file SHA-256 (from GH Actions download): `f09278501571c32e50edabcf9a2508427fe967c9511393ef18a6c9f360f340dd`. The downloader pins it to detect any upstream change. Never silently replace the model if network/hash checks fail.
 
 ## Why we changed
 The V3 geometry was procedural spheres and deformed cylinders; smoke CI passed but it visually resembled a toy, not a classical bust. V4 uses high-quality existing third-party asset with an explicit commercial-safe license instead of pretending we can invent the anatomy.
