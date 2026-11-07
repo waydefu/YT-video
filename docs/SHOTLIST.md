@@ -1,27 +1,38 @@
-# BROKE TRIO — film studio logo sequence (10 seconds)
+# BROKE TRIO — 現行 10 秒片頭分鏡契約（2026-11-07 整理）
 
-This is a reusable opening title, with restrained *end-of-film studio ident* visual language.
-Canvas **1920×1080, 16:9, square pixels, 24 fps**. Keep subject inside x=10–90%, y=10–90%; titles inside x=15–85%, y=15–85%. Review frame crops manually.
+> **CURRENT CREATIVE BRIEF / NOT RENDER-APPROVED.** 此處整理使用者已提出的最新方向，不代表程式與成品已同步或實播通過。V3 舊分鏡完整保存在 [`archive/SHOTLIST-V3-LEGACY.md`](archive/SHOTLIST-V3-LEGACY.md)。V4 既有素材與時間規劃另見 [`V4-ASSETS.md`](V4-ASSETS.md)。
 
-| Time | Scene / camera / action | Lighting and FX |
-|---|---|---|
-| 0.00–0.85 | Black stage, slow volumetric smoke crossing frame. No visible statue. | No spots. Dark background with evolving 3-D noise fog. |
-| 0.85–1.96 | LEFT spotlight rises through smoke, rests, then fades to **zero**. | Independent spot: LEFT only. No figure emergence. |
-| 1.96–2.15 | Short dark gap; smoke remains. | BOTH spots zero. |
-| 2.15–3.22 | RIGHT spotlight rises, rests, falls to **zero**. | Independent spot: RIGHT only. LEFT zero. |
-| 3.22–3.35 | Smoke in darkness. | Both spots off. |
-| 3.35–4.8 | One original sculptural figure slowly emerges from behind smoke; camera pushes in; figure turns toward lens. | Film softbox plus rim only, separate from the two opening spotlights. |
-| 4.8–5.7 | Push tightly into the same face. Hold for tension. | Sculpted cheek/nose/eyebrows must be visible and undistorted. |
-| 5.7–7.15 | Stone loses integrity; shards break outward and dust drops. | Procedural 3-D shards, **currently approximated ballistic motion, not rigid-body simulation**. |
-| 7.15–8.7 | Dust travels across 3-D stage, draws three bust silhouettes in a new composition, halo emerges. | No direct hard cut to finished brand. |
-| 8.7–10.0 | BROKE TRIO and subtitle appear in safe area, hold, fade/transition to episode. | Reproducible serif typography, avoid cropping, no outside stock assets. |
+## 交付格式與聲畫要求
 
-## Acceptance
+- 目標：10 秒 BROKE TRIO 頻道片頭，1920×1080、16:9、24 fps。真正的 Blender 3D 場景、體積煙霧、兩盞**互不重疊**的獨立聚光燈。
+- 構圖：三尊復古大理石／石膏半身像的品牌視覺，黑白或低彩度、極少霧化；具體品牌標誌以已授權素材／使用者確認稿為準，不擅自重繪。
+- **開燈音效一律採重低音開燈聲**；不要沿用 V3 的玻璃、碎裂或碎石音效。可保留必要的原創環境音，但須另行聲畫驗收。
+- **禁止石裂、碎石、剝落、石塊碰撞、剛體破裂**；只使用粉塵。不得再把舊 V3 的破碎效果帶進當前片頭。
+- **重組：類似時間反轉，從地面的灰塵逆向聚集形成 Logo**；不以石塊碎裂後拼接替代，也不可直接硬切到完成的 Logo。
+- 攝影機須連續、有電影式節奏，不要把一連串靜態海報當 3D 動畫。
 
-- Left light **ends at 1.96**; right **starts 2.15**; emergence **begins 3.35** (verified by keyframes AND rendered frames).
-- No hard cuts between moving statue and its close-up/breakup. Reassembly is separate framing, not a slideshow.
-- Consistent bronze/ivory monochrome, controlled black levels, no over-bloom.
-- Correct title: `BROKE TRIO`; subtitle: `NO MONEY · NO TIME · NO 9-TO-5`.
-- Export: valid H.264 MP4 with AAC audio, 24 fps, 1920×1080, duration ~10 seconds.
-- Review at least 8 frames at timestamps 0.4, 1.45, 2.05, 2.65, 3.4, 4.8, 5.85, 7.6, 9.4 and listen to audio before calling it ready.
-- **Current V3 is a geometry/animation blockout**. High-detail sculpt, proper rigid-body fracture, realistic smoke simulation, photoreal quality and manual visual QA remain to be completed.
+## 分鏡順序（秒數待新樣片實播確認）
+
+| 順序 | 鏡頭／動作 | 聲音與禁止事項 |
+| --- | --- | --- |
+| 1 | 黑場＋少量體積煙霧，保持主體神秘感 | 原創環境音可選，不做碎石聲 |
+| 2 | LEFT 聚光燈開啟、照亮煙霧、完全熄滅 | 只使用低頻開燈聲；右燈必須保持關閉 |
+| 3 | RIGHT 聚光燈於 LEFT 完全熄滅後獨立開啟，再完全熄滅 | 第二次獨立低頻開燈聲；不能同時亮起 |
+| 4 | 兩燈皆熄後，雕像從霧中顯現；同一鏡頭推近主體臉部 | 細節、比例與燈光要真實；不加入裂痕 |
+| 5 | 主體／場景以粉塵的消散與移動轉換，鏡頭保持連續 | 只有粉塵，**沒有石塊、石裂、彈道碎片** |
+| 6 | 地面灰塵沿反向時間軌跡流動並聚集成 Logo / 三尊像品牌構圖 | 不能直接切換到終稿；要看得出重組過程 |
+| 7 | `BROKE TRIO` 品牌字定格，留可讀的片尾停留 | 標題不得裁切，音畫收束 |
+
+## 強制驗收（G3）
+
+1. 先做最難的 2–3 段 smoke / shot preview，**自己觀看實際渲染幀與短影片**；不只靠 Blender 腳本、XML、CI、解析度或關鍵影格聲稱完成。
+2. 左右燈不交錯，兩盞完全熄滅後主體才出現。亮燈聲必須是低音開燈聲，實際聽過方可驗證。
+3. 全片逐段檢查 **是否出現石裂／碎石／碎裂音效**；發現即 FAIL；粉塵必須可被辨認，反向聚合不能用其他現象代替。
+4. 確認攝影機連續、品牌三尊像與最終 Logo 構圖一致，文字落在安全區內；手機尺寸檢視可讀性。
+5. `config/production.json`、`blender/scene.py`、`blender/v4_opening.py`、`scripts/soundtrack.py`、`scripts/v4_opening_audio.py` 目前**可能仍代表 V3 或不同實驗版本**。本文件更新不等於它們已實現新分鏡；需要在獨立製作 PR 中同步、實際渲染與驗收。
+6. 原版石裂／碎石與舊時間碼**僅供歷史研究**：請參閱 [`archive/SHOTLIST-V3-LEGACY.md`](archive/SHOTLIST-V3-LEGACY.md)，不可拿來當現行製片驗收標準。
+
+## 同步依據
+
+- [`../AGENTS.md`](../AGENTS.md) 為專案工作權限與品質門檻；[`QUALITY-GATED-WORKFLOW.md`](QUALITY-GATED-WORKFLOW.md) 為 G0–G5 通用規範。
+- 此次 PR **僅整理治理與文字規格**，不聲稱已完成 3D 製作、音訊更換或真實播放驗收。

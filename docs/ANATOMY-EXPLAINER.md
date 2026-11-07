@@ -72,7 +72,7 @@ python3 scripts/pptx_morph_proxy.py build/anatomy/anatomy-explainer.pptx build/a
 | C PowerPoint 實播／匯出影片 | **BLOCKED / NOT RUN** | 無 Microsoft PowerPoint |
 | D 桌面／手機 | NOT RUN | — |
 | E 內容與授權 | 授權 PASS；**事實待人工核對** | 見 §6 |
-| CI | 工作流 `anatomy-explainer.yml` 已提供，**尚未執行** | — |
+| CI | **2026-11-06 已成功**（PR 來源提交 `7626cf5`） | [Actions #42230737798](https://github.com/waydefu/YT-video/actions/runs/42230737798)：來源下載、13 頁建置、結構與靜態／Morph 代理成功；**不代表 C/D PowerPoint 實播驗收通過** |
 
 **自查發現的主要問題**：
 1. **內文偏小**：密集頁的說明文字是 16–20 pt。1080p 桌面可讀，**手機觀看會偏小**；若要手機友善，需拆頁或放大（會增加頁數）。

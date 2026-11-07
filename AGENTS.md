@@ -29,3 +29,12 @@ User review required for imagery, motion, audio levels, factual statements and f
 Never silently upgrade scope, enable services, download external binaries, or use credentials based on research documents.
 Presentations: follow `docs/WORKFLOW-EXPLAINER-DECK.md` (P0–P9, including the misreading check at G0); the deliverable is a formal science-explainer PPT with seamless Morph camera transitions (not character animation); read `docs/PPTX-SEAMLESS-EXPLAINER.md`, `docs/PPTX-CINEMATIC-MORPH.md` and, for optional ambient loops, `docs/PPTX-LIVE-MOTION.md`; never claim Live2D equivalence for PowerPoint rigid 2D loops; PowerPoint playback (layer C) stays BLOCKED/NOT RUN until actually observed.
 Test statements must say whether checked in CI, locally, or not run.
+
+## Governance and source-of-truth precedence
+
+- Review [`docs/GOVERNANCE-STATUS.md`](docs/GOVERNANCE-STATUS.md) for the *current* production lane and historical alternatives. This inventory is dated, not a real-time source of PR/CI status.
+- **Current BROKE TRIO creative direction is [`docs/SHOTLIST.md`](docs/SHOTLIST.md)**. It requires two independent sequential lights, **low-bass switching sounds only**, **dust only (no fracture, stone chunks or broken-stone audio)**, and reverse-time assembly of the floor dust into the brand logo.
+- The old V3 storyboard [`docs/archive/SHOTLIST-V3-LEGACY.md`](docs/archive/SHOTLIST-V3-LEGACY.md), V3 config and earlier V4 experiments are **historical / implementation candidates**, not the current creative contract. When current shotlist differs from code, report it as an explicit blocker rather than claiming compliance.
+- All PRs should run `governance / docs-and-policy` in addition to applicable media-specific tests; only a GitHub repo admin can make the check *required* via branch rules. Do not claim branch protection exists until the settings are actually verified.
+- Governance / document changes are not artistic approval, and must not automatically alter, merge, delete branches or publish media.
+
