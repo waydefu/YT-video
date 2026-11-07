@@ -99,3 +99,7 @@ python3 -m unittest tests.test_ai_subscriptions_data -v
 | DeepSeek | TEXT-ONLY（條款限制未經許可的品牌標識） | 文字 |
 
 擺放規則（所有品牌）：Logo 只在實際介紹該產品的頁面短暫出現；不改色、不變形、不加陰影；不排成片頭、封面或「合作夥伴牆」；不比自家品牌突出。取得素材：`python3 scripts/brand_assets.py`（需網路；CI 不抓取，CI 版本為純文字）。
+
+## 轉場方向調整：地圖巡覽樣片（2026-11-07，待你決定）
+
+使用者回饋：參考影片靠「畫框」放前頁／下頁很自然，但本簡報是表格與圖表，畫框只是裝飾。已做 **7 頁樣片** `scripts/build_board_tour_sample.py`（輸出 `build/ai-subscriptions/board-tour-sample.pptx`），把平台詳細頁放在一張**地圖**上：放大進第一張卡片 → 在相鄰卡片間平移 → 縮回地圖（卡片打勾）。手法與限制見 [`PPTX-SEAMLESS-EXPLAINER.md`](PPTX-SEAMLESS-EXPLAINER.md) 的「地圖巡覽」。**目前 20 頁正式稿仍是畫框版**；樣片通過你的審視後，才把全檔改成：地圖巡覽（平台段）＋共享元素 Morph（表格→長條）＋下鑽，並移除「剛剛的…」畫框說明。狀態：SPIKE；A、B 層自查；PowerPoint 實播 NOT RUN。

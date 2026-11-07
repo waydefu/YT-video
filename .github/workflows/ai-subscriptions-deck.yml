@@ -6,6 +6,7 @@ on:
       - 'scripts/build_ai_subscriptions_deck.py'
       - 'scripts/deck_kit.py'
       - 'scripts/brand_assets.py'
+      - 'scripts/build_board_tour_sample.py'
       - 'tests/test_brand_assets.py'
       - 'scripts/pptx_world.py'
       - 'scripts/pptx_morph_proxy.py'
@@ -35,6 +36,12 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Build the 20-slide deck (CI is text-only; no brand image fetched)
         run: python scripts/build_ai_subscriptions_deck.py --output build/ai-subscriptions/ai-subscriptions-deck.pptx
+      - name: Build and validate the 7-slide board-tour sample (layer A only)
+        run: |
+          python scripts/build_board_tour_sample.py --output build/ai-subscriptions/board-tour-sample.pptx
+          python scripts/pptx_validate.py build/ai-subscriptions/board-tour-sample.pptx --min-loops 0 --strict \
+            --readable build/ai-subscriptions/board-tour-sample.readable.json
+          python scripts/pptx_morph_proxy.py build/ai-subscriptions/board-tour-sample.pptx build/ai-subscriptions/board-proxy.pptx --steps 3
       - name: Validate structure (layer A only; not PowerPoint playback)
         run: |
           python scripts/pptx_validate.py build/ai-subscriptions/ai-subscriptions-deck.pptx --min-loops 0 --strict \
@@ -64,6 +71,7 @@ jobs:
           path: |
             build/ai-subscriptions/ai-subscriptions-deck.pptx
             build/ai-subscriptions/ai-subscriptions-deck.readable.json
+            build/ai-subscriptions/board-tour-sample.pptx
             build/ai-subscriptions/stills/frame-*.png
             build/ai-subscriptions/proxy/frame-*.png
           retention-days: 14

@@ -17,6 +17,7 @@ COPPER, LINE, WHITE = "C35F3F", "D5D0C2", "FFFFFF"
 GOOD, BAD = "2E7D5B", "B3402A"
 DARK, DARKTXT, DARKSUB = "1B2A2A", "F1EFE7", "A9B5B2"
 WIN_W = 3.9
+DECOR = True  # False: board mode, panels carry no hung-frame / window decorations
 FRAME = (0.9, 2.1, WIN_W)
 
 
@@ -41,6 +42,8 @@ def base(c, kicker, headline, tint=CARD, hint=None):
 
 def window(c, wx, wy, ww=WIN_W):
     """Reserved box where the next panel appears as a miniature (frame drawn on the previous panel)."""
+    if not DECOR:
+        return
     wh = ww * H / W
     c.rect("win_sh", wx - .02, wy + .05, ww + .24, wh + .24, "000000", alpha=.12)
     c.rect("win", wx - .12, wy - .12, ww + .24, wh + .24, WHITE, line=(INK, 1.5))
@@ -48,6 +51,8 @@ def window(c, wx, wy, ww=WIN_W):
 
 def frame(c, fx, fy, fw, tint=WHITE):
     """A picture frame on the wall that will hold the previous panel."""
+    if not DECOR:
+        return
     fh = fw * H / W
     c.rect("frm_sh", fx - .1, fy - .05, fw + .5, fh + .5, "000000", alpha=.16)
     c.rect("frm", fx - .22, fy - .22, fw + .44, fh + .44, tint, line=(INK, 2.5))
