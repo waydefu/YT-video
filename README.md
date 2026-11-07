@@ -132,6 +132,7 @@ python3 scripts/pptx_validate.py build/anatomy/anatomy-explainer.pptx --min-loop
 ## 科普 YouTube 正式簡報：無縫 Morph 轉場（方法與範例）
 
 正式可編輯 PPT，頁與頁之間是連續的鏡頭式轉場（鑽進視窗、平移、拉遠揭露）。方法、規則、流程與狀態見 [`docs/PPTX-SEAMLESS-EXPLAINER.md`](docs/PPTX-SEAMLESS-EXPLAINER.md)。
+不同內容類型（圖片、表格、長條、並列模組、清單）適合不同的轉場手法，**每頁可以不同**；研究與手法目錄見 [`docs/PPTX-TRANSITION-CATALOG.md`](docs/PPTX-TRANSITION-CATALOG.md)（RESEARCH，未實播）。
 
 ```bash
 pip install python-pptx==1.0.2
