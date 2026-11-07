@@ -56,7 +56,7 @@
 | 逐頁 | 鏡頭**放大進第 1 張卡片**，之後在相鄰卡片間**平移**（縮放不變） | 上一頁／下一頁就是相鄰的卡片，不需要畫框 |
 | 收尾 | `zoom_out`：鏡頭回到地圖，**同名物件**重畫（卡片打勾、說明更新） | Morph 把同一批物件連續縮放回來 |
 
-`pptx_world.py` 新增 `nest(window, parent)`（子頁放在任一祖先的視窗內）與 `zoom_out(to)`（回到較早的面板並重畫；`name_idx` 沿用原名、`replaces` 讓原面板不重複繪製）。deck_kit 的 `DECOR=False` 讓面板不畫掛框／視窗裝飾。樣片：`scripts/build_board_tour_sample.py`（7 頁，Claude／ChatGPT → Cursor → Antigravity／OpenCode → Kimi → DeepSeek → 回地圖）。
+`pptx_world.py` 新增 `nest(window, parent)`（子頁放在任一祖先的視窗內）與 `zoom_out(to)`（回到較早的面板並重畫；`name_idx` 沿用原名、`replaces` 讓原面板不重複繪製）。deck_kit 的 `DECOR=False` 讓面板不畫掛框／視窗裝飾。另有 `stay`：不動鏡頭，前一頁在原處重畫，同名物件（頁首、表格列）被 Morph 補間為新樣子，其餘淡入淡出。實例：AI 訂閱簡報（見 [`AI-SUBSCRIPTIONS-DECK.md`](AI-SUBSCRIPTIONS-DECK.md)）的地圖巡覽（Claude／ChatGPT → Cursor → Antigravity／OpenCode → Kimi → DeepSeek → 回地圖），以及平台列在總覽表、價格階梯、閘門矩陣之間的延續。
 
 **樣片規則與限制**：視窗寬 3.6 英吋（縮放 3.7×，略高於本文 §1 的 3.5× 經驗值，需實播驗證）；標籤放在視窗上方，不放在視窗之間的縫；平移時下一張卡片的標籤會被放大帶過畫面（代理幀中看起來像「預告下一頁」，是否好看待實播）；一張地圖 5–6 張卡片為宜（再多，縮圖與縫隙會擠）。**B 層代理只能否決設計；PowerPoint 實播未驗。**
 

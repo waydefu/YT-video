@@ -77,6 +77,31 @@ class WorldGeometry(unittest.TestCase):
         self.assertNotIn(2, ids(1))
         self.assertIn(2, ids(2))
 
+    def test_stay_redraws_in_place_with_the_same_names(self):
+        w = World(gap=0.6)
+        w.first(noop)
+        w.add(noop, "stay")
+        w.add(noop, "stay")
+        w.add(noop, "pan_right")
+        a, b, c, d = w.panels
+        for p in (b, c, d):
+            self.assertEqual((p.ox, p.oy) if p is not d else (a.ox, a.oy), (a.ox, a.oy))
+        self.assertEqual((b.s, c.s), (a.s, a.s))
+        self.assertEqual(c.name_idx, a.name_idx)  # a chain of stays keeps one namespace
+        ids = lambda j: [p.idx for p in w._visible(j)]  # noqa: E731
+        self.assertEqual([i for i in ids(0) if i < 3], [0])
+        self.assertEqual([i for i in ids(1) if i < 3], [1])  # each stay replaces the previous drawing
+        self.assertEqual([i for i in ids(2) if i < 3], [2])
+        self.assertAlmostEqual(d.ox, a.ox + W + 0.6)  # a pan after stays continues from the same place
+
+    def test_stay_inside_a_nested_window_keeps_the_miniature_scale(self):
+        w = World(gap=0.6)
+        w.first(noop)
+        w.add(noop, "nest", window=(0.9, 2.2, 3.6), parent=0)
+        w.add(noop, "stay")
+        self.assertAlmostEqual(w.panels[2].s, w.panels[1].s)
+        self.assertAlmostEqual(w.view(2)[2], w.view(1)[2])
+
 
 @unittest.skipIf(Presentation is None, "python-pptx not installed")
 class WorldDrawing(unittest.TestCase):

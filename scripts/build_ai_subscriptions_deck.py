@@ -29,8 +29,8 @@ import ai_subscriptions_data as D  # noqa: E402
 import deck_kit as K  # noqa: E402
 import brand_assets  # noqa: E402
 import pptx_morph_patch  # noqa: E402
-from deck_kit import (BAD, CARD, COPPER, DARK, DARKSUB, DARKTXT, FRAME, GOOD, INK, LINE, MUTED, SUB, WALL, WHITE,  # noqa: E402
-                      WIN_W, T, base, frame, hbar, line, para_list, row_cells, window)
+from deck_kit import (BAD, CARD, COPPER, DARK, DARKSUB, DARKTXT, GOOD, INK, LINE, MUTED, SUB, WALL, WHITE,  # noqa: E402
+                      T, base, hbar, line, para_list, row_cells)
 from pptx_world import EMU, H, W, World  # noqa: E402
 
 HOLD_MS, MORPH_MS = 8000, 1500
@@ -39,7 +39,6 @@ CURSOR_MARK = "cursor-lockup-horizontal-2d-light.png"
 BRAND = {"dir": None}  # set by build(); the mark is used only if present and matching its pinned SHA256
 CURSOR_CREDIT = "Cursor 標誌取自官方品牌頁 cursor.com/brand；商標屬 Anysphere, Inc.，本簡報與其無關聯、非其背書。"
 OPENCODE_CREDIT = "OpenCode 標誌取自官方品牌頁 opencode.ai/brand；商標屬 Anomaly，本簡報與其無關聯、非其背書。"
-N = 20
 FOOTER = f"資料快照 {D.SNAPSHOT}（{D.VERSION}）· 取自提供文件，未重新核對"
 PLAT = {"Claude": "C35F3F", "ChatGPT": "2E7D5B", "Cursor": "3B6EA5", "Antigravity": "7A5BB0",
         "OpenCode": "A37A12", "Kimi": "237F94", "DeepSeek": "55647A"}
@@ -60,7 +59,7 @@ def p01():
     def draw(c):
         base(c, KICKERS[0], None)
         T(c, "t1", "AI Coding / Agent", 0.85, 0.95, 7.0, 0.95, 44, INK, face="serif", bold=True)
-        T(c, "t2", "七平台訂閱額度比較", 0.9, 1.95, 7.0, 0.95, 44, INK, bold=True)
+        T(c, "headline", "七平台訂閱額度比較", 0.9, 1.95, 7.0, 0.95, 44, INK, bold=True)  # shared with slide 2's headline
         T(c, "plat", "Claude · ChatGPT／Codex · Cursor · Antigravity · OpenCode · Kimi · DeepSeek", 0.9, 3.0, 6.5, 0.8, 16, SUB)
         T(c, "snap", f"資料快照 {D.SNAPSHOT}（{D.VERSION}）· 價格與額度之後可能已變動", 0.9, 3.85, 6.5, 0.6, 14, MUTED)
         for n, (label, fill) in enumerate([("5 小時", 0.72), ("每週", 0.45), ("每月", 0.2)]):
@@ -69,7 +68,6 @@ def p01():
             c.rect(f"g{n}t", 8.0, y + .5, 4.4, 0.42, "E3DFD2", kind=MSO_SHAPE.ROUNDED_RECTANGLE, round_=0.5)
             c.rect(f"g{n}f", 8.0, y + .5, 4.4 * fill, 0.42, COPPER, kind=MSO_SHAPE.ROUNDED_RECTANGLE, round_=0.5)
         T(c, "gcap", "三道閘門的示意圖（非實際數據）", 8.0, 5.55, 4.6, 0.3, 14, MUTED)
-        window(c, 0.9, 4.8)
     return draw
 
 
@@ -101,16 +99,15 @@ def p03():
 
     def draw(c):
         base(c, KICKERS[2], "七個平台，七種算法", tint=WALL)
-        frame(c, *FRAME)
-        T(c, "frame_cap", "剛剛的「四種額度」。", 0.9, 4.75, 4.4, 0.3, 14, SUB)
-        T(c, "h0", "平台", 5.6, 1.78, 1.7, 0.3, 14, MUTED)
-        T(c, "h1", "入門價", 7.3, 1.78, 2.6, 0.3, 14, MUTED)
-        T(c, "h2", "最關鍵的額度規則", 10.0, 1.78, 2.6, 0.3, 14, MUTED)
+        T(c, "h0", "平台", 0.9, 1.78, 1.9, 0.3, 14, MUTED)
+        T(c, "h1", "入門價", 3.0, 1.78, 3.6, 0.3, 14, MUTED)
+        T(c, "h2", "最關鍵的額度規則", 6.8, 1.78, 5.8, 0.3, 14, MUTED)
         for n, (name, price, rule) in enumerate(rows):
             y = 2.12 + n * 0.64
-            line(c, f"ln{n}", 5.6, y - .06, 7.0)
-            row_cells(c, f"r{n}", y, [(5.6, 1.7, name, {"color": PLAT[name.split('／')[0]]}), (7.3, 2.6, price, {}),
-                                      (10.0, 2.6, rule, {"pt": 14})], pt=16, h=0.6)
+            line(c, f"ln{n}", 0.9, y - .06, 11.7)
+            # the platform cell `r{n}_0` keeps its name on slides 3-5, so Morph carries each platform from view to view
+            row_cells(c, f"r{n}", y, [(0.9, 1.9, name, {"color": PLAT[name.split('／')[0]]}), (3.0, 3.6, price, {}),
+                                      (6.8, 5.8, rule, {"pt": 15})], pt=16, h=0.6)
     return draw
 
 
@@ -122,7 +119,7 @@ def p04():
         for n, (plat, cur, tiers) in enumerate(D.LADDER):
             y = 1.9 + n * 0.74
             color = PLAT[names[plat]]
-            T(c, f"p{n}", plat, 0.9, y + .08, 2.0, 0.45, 16, color, bold=True)
+            T(c, f"r{n}_0", plat, 0.9, y + .08, 2.0, 0.45, 16, color, bold=True)  # same name as slide 3's platform cell
             for m, (tier, price) in enumerate(tiers):
                 x = 3.0 + m * 1.88
                 label = f"{tier} {'$' if cur == 'USD' else '¥'}{price:,}"
@@ -131,7 +128,7 @@ def p04():
                 if cur == "USD":
                     hbar(c, f"p{n}c{m}b", x, y + .53, 1.76, 0.07, price, 500, color)
         y = 1.9 + 6 * 0.74
-        T(c, "pds", "DeepSeek", 0.9, y + .08, 2.0, 0.45, 16, PLAT["DeepSeek"], bold=True)
+        T(c, "r6_0", "DeepSeek", 0.9, y + .08, 2.0, 0.45, 16, PLAT["DeepSeek"], bold=True)
         for m, label in enumerate(["聊天 免費", "API 按量計費"]):
             x = 3.0 + m * 1.88
             c.card(f"pdc{m}", x, y, 1.76, 0.5, WHITE, border=LINE, shadow=False)
@@ -146,20 +143,19 @@ def p05():
     def draw(c):
         base(c, KICKERS[4], "各平台的「閘門」不同")
         T(c, "lead", ["同樣叫「月費」，限制的時間尺度並不相同。", "有的是 5 小時＋週，有的多一道月池，API 則是按量計費。"],
-          0.9, 1.95, 5.1, 2.4, 18, SUB, after=8)
-        x0 = 6.6
+          7.6, 1.95, 5.0, 2.4, 18, SUB, after=8)
+        x0 = 0.9  # platform names keep the x of slides 3-4, so Morph only has to re-space the rows
         for i, h in enumerate(["5 小時", "每週", "每月"]):
-            T(c, f"mh{i}", h, x0 + 2.0 + i * 1.3, 1.5, 1.2, 0.3, 14, MUTED, align=PP_ALIGN.CENTER)
+            T(c, f"mh{i}", h, x0 + 2.3 + i * 1.3, 1.8, 1.2, 0.3, 14, MUTED, align=PP_ALIGN.CENTER)
         for n, (name, marks) in enumerate(gates):
-            y = 1.9 + n * 0.5
-            line(c, f"mln{n}", x0, y - .04, 6.0)
-            T(c, f"mn{n}", name, x0, y, 1.9, 0.42, 16, PLAT[name], bold=True)
+            y = 2.2 + n * 0.5
+            line(c, f"mln{n}", x0, y - .04, 6.2)
+            T(c, f"r{n}_0", name, x0, y, 1.9, 0.42, 16, PLAT[name], bold=True)  # carried over from slides 3-4
             for i, ch in enumerate(marks):
-                T(c, f"m{n}_{i}", ch, x0 + 2.0 + i * 1.3, y, 1.2, 0.42, 20, COPPER if ch == "●" else MUTED,
+                T(c, f"m{n}_{i}", ch, x0 + 2.3 + i * 1.3, y, 1.2, 0.42, 20, COPPER if ch == "●" else MUTED,
                   bold=True, align=PP_ALIGN.CENTER)
         T(c, "mfoot", "Claude Ultra 驗證帳戶免 5h；ChatGPT Pro 100／200／500 目前無 5h 但有總額度；Cursor 舊制為雙月池；"
-                      "Antigravity Pro 的 Argon 為獨立 weekly-only；Kimi 舊會員仍為 5h＋週＋月。", x0, 5.5, 6.0, 1.25, 14, MUTED)
-        window(c, 0.9, 4.75)
+                      "Antigravity Pro 的 Argon 為獨立 weekly-only；Kimi 舊會員仍為 5h＋週＋月。", 7.6, 4.5, 5.0, 2.1, 14, MUTED)
     return draw
 
 
@@ -205,27 +201,6 @@ def p06():
     return draw
 
 
-def p07():
-    def draw(c):
-        base(c, KICKERS[6], "Cursor：週池倍率", tint=WALL)
-        frame(c, *FRAME)
-        T(c, "frame_cap", "剛剛的「Claude 與 ChatGPT」。", 0.9, 4.75, 4.4, 0.3, 14, SUB)
-        for n, (tier, price, mult) in enumerate(D.CURSOR_MULTIPLIERS):
-            y = 1.85 + n * 0.58
-            T(c, f"cm{n}", f"{tier} ${price}", 5.6, y, 1.8, 0.45, 16, PLAT["Cursor"], bold=True)
-            hbar(c, f"cmb{n}", 7.5, y + .04, 3.9, 0.36, mult, 50, PLAT["Cursor"])
-            T(c, f"cmv{n}", f"{mult}×", 11.55, y, 1.1, 0.45, 16, INK, bold=True)
-        items = [("", "第一方模型週池，由 Cursor Agent／CLI、Cloud Agents、Grok Bot、Grok Chat／Voice／Imagine 共用"),
-                 ("", "第三方模型：Plus 不支援；Premium 起另購預付 credit，按 API list price"),
-                 ("", "舊制 Pro／Pro+／Ultra：兩個月池（Cursor Models／Other Models）；切換新制可選但永久")]
-        T(c, "cnotes", para_list(items), 5.6, 4.35, 7.0, 2.4, 15, SUB, after=6)
-        mark = brand_mark(CURSOR_MARK)
-        if mark:  # lockup alone, unaltered, right of the headline; credit sits in the free band under the notes
-            c.picture("brand_cursor", mark, 9.9, 1.0, 2.7, 0.64, align="right")
-            T(c, "brand_credit", CURSOR_CREDIT, 5.6, 6.2, 7.0, 0.5, 14, MUTED)
-    return draw
-
-
 def p08():
     left = ("Google Antigravity", [("Google AI Pro 約 US$20／月：", "5h＋weekly；付費 Pro 另有 Argon 獨立 weekly-only 額度"),
                                   ("Ultra 5× US$100／Ultra 20× US$200：", "相對 Pro 的 token-worth 倍率；仍有 weekly"),
@@ -260,7 +235,6 @@ def p09():
         items = [("新會員 Kimi Code：", "滾動 5 小時限額＋月度共享額度；沒有每週限額（5h 桶大小未公開）"),
                  ("額度共用：", "Code、Work、PPT、Deep Research、Agent、Claw 同一池；未使用不結轉")]
         T(c, "knotes", para_list(items), 8.7, 1.75, 3.9, 2.55, 15, SUB, after=6)
-        window(c, 8.7, 4.4)
     return draw
 
 
@@ -293,19 +267,17 @@ def p11():
 
     def draw(c):
         base(c, KICKERS[10], "高快取 Agent：每 1 億 tokens 要多少錢", tint=WALL)
-        frame(c, *FRAME)
-        T(c, "frame_cap", "剛剛的「DeepSeek 公開單價」。", 0.9, 4.75, 4.4, 0.3, 14, SUB)
         for n, (label, key) in enumerate(bars):
             y = 1.85 + n * 0.52
             v = D.DOC_COST_100M_USD[key]
-            T(c, f"cb{n}", label, 5.6, y, 1.8, 0.42, 16, PLAT["DeepSeek"], bold=True)
-            hbar(c, f"cbb{n}", 7.45, y + .04, 3.5, 0.34, v, 17.248, PLAT["DeepSeek"])
-            T(c, f"cbv{n}", f"US${v:g}", 7.45 + 3.5 * v / 17.248 + .1, y, 1.3, 0.42, 16, INK, bold=True)
+            T(c, f"cb{n}", label, 0.9, y, 1.9, 0.42, 16, PLAT["DeepSeek"], bold=True)
+            hbar(c, f"cbb{n}", 2.9, y + .04, 6.5, 0.34, v, 17.248, PLAT["DeepSeek"])
+            T(c, f"cbv{n}", f"US${v:g}", 2.9 + 6.5 * v / 17.248 + .1, y, 1.3, 0.42, 16, INK, bold=True)
         items = [("假設：", "每 100M＝92M 快取輸入＋7M 新輸入＋1M 輸出；不含 cache write、搜尋與稅"),
                  ("月量 1B tokens（同比例）：", "Flash 離峰約 US$19.26／尖峰 38.52；Pro 離峰 86.24／尖峰 172.48"),
                  ("Kimi API（人民幣，每 100M）：", "K3.1 Pro ¥278.60；Highspeed ¥437.60；K3 ¥424.00"),
                  ("", "這是 API 成本試算，不是任何訂閱的保證額度")]
-        T(c, "cnotes", para_list(items), 5.6, 4.05, 7.0, 2.7, 14, SUB, after=5)
+        T(c, "cnotes", para_list(items), 0.9, 4.05, 11.7, 2.6, 15, SUB, after=5)
     return draw
 
 
@@ -343,7 +315,6 @@ def p13():
                  ("", "廠商自測的分數口徑不同，不能直接排進這個榜"),
                  ("", "Terminal-Bench 2.0／3.0／4.0 不可互相換算")]
         T(c, "tnotes", para_list(items), 8.7, 1.85, 3.9, 2.4, 15, SUB, after=6)
-        window(c, 8.7, 4.4)
     return draw
 
 
@@ -377,15 +348,13 @@ def p15():
 
     def draw(c):
         base(c, KICKERS[14], "官方確值，與官方未公開的", tint=WALL)
-        frame(c, *FRAME)
-        T(c, "frame_cap", "剛剛的「可用的四種意思」。", 0.9, 4.75, 4.4, 0.3, 14, SUB)
-        T(c, "uh1", "官方可量化", 7.3, 1.78, 2.9, 0.3, 14, MUTED)
-        T(c, "uh2", "官方未公開", 10.3, 1.78, 2.3, 0.3, 14, MUTED)
+        T(c, "uh1", "官方可量化", 3.0, 1.78, 5.2, 0.3, 14, MUTED)
+        T(c, "uh2", "官方未公開", 8.4, 1.78, 4.2, 0.3, 14, MUTED)
         for n, (name, a, b) in enumerate(rows):
             y = 2.12 + n * 0.64
-            line(c, f"uln{n}", 5.6, y - .06, 7.0)
-            row_cells(c, f"ur{n}", y, [(5.6, 1.6, name, {"color": PLAT[name]}), (7.3, 2.9, a, {"pt": 14}),
-                                       (10.3, 2.3, b, {"pt": 14, "color": BAD})], pt=15, h=0.6)
+            line(c, f"uln{n}", 0.9, y - .06, 11.7)
+            row_cells(c, f"ur{n}", y, [(0.9, 2.0, name, {"color": PLAT[name]}), (3.0, 5.2, a, {"pt": 15}),
+                                       (8.4, 4.2, b, {"pt": 15, "color": BAD})], pt=15, h=0.6)
     return draw
 
 
@@ -423,7 +392,6 @@ def p17():
             T(c, f"w{n}", label, 6.6, y, 3.0, 0.42, 15, INK, bold=True)
             hbar(c, f"wb{n}", 9.7, y + .05, 2.2, 0.32, wgt, 20, COPPER)
             T(c, f"wv{n}", str(wgt), 9.7 + 2.2 * wgt / 20 + .1, y, 0.6, 0.42, 15, INK, bold=True)
-        window(c, 0.9, 4.75)
     return draw
 
 
@@ -456,13 +424,11 @@ def p19():
 
     def draw(c):
         base(c, KICKERS[18], "訂閱前，先逐項確認", tint=WALL)
-        frame(c, *FRAME)
-        T(c, "frame_cap", "剛剛的「不能直接證實的說法」。", 0.9, 4.75, 4.4, 0.3, 14, SUB)
         for n, (name, text) in enumerate(rows):
             y = 1.8 + n * 0.7
-            line(c, f"cln{n}", 5.6, y - .06, 7.0)
-            T(c, f"cn{n}", name, 5.6, y, 1.5, 0.6, 15, PLAT[name if name in PLAT else "ChatGPT"], bold=True)
-            T(c, f"ct{n}", text, 7.15, y, 5.5, 0.62, 14, SUB)
+            line(c, f"cln{n}", 0.9, y - .06, 11.7)
+            T(c, f"cn{n}", name, 0.9, y, 1.9, 0.6, 15, PLAT[name if name in PLAT else "ChatGPT"], bold=True)
+            T(c, f"ct{n}", text, 2.9, y, 9.7, 0.62, 15, SUB)
     return draw
 
 
@@ -484,45 +450,100 @@ def p20():
     return draw
 
 
+# ------------------------------------------------------------------------------------------------ board (hub) pages
+HUB_W = 3.6  # hub window width: the camera zooms 3.7x into a card
+COLS, ROWS = (0.9, 4.95, 9.0), (2.2, 4.7)
+# tour order = snake over the board: three across the top row, down on the right, then back left
+SLOTS = [(COLS[0], ROWS[0]), (COLS[1], ROWS[0]), (COLS[2], ROWS[0]), (COLS[2], ROWS[1]), (COLS[1], ROWS[1])]
+LABELS = ["Claude／ChatGPT", "Cursor", "Antigravity／OpenCode", "Kimi", "DeepSeek 單價／成本"]
+LABEL_COLORS = [PLAT["Claude"], PLAT["Cursor"], PLAT["Antigravity"], PLAT["Kimi"], PLAT["DeepSeek"]]
+HUB_H = HUB_W * H / W
+
+
+def hub(done):
+    """The board: five card windows (the platform pages live inside them). `done` redraws it after the tour with the
+    same object names, so Morph continues the same objects back into the map."""
+    def draw(c):
+        base(c, "平台詳細頁 · 地圖", "七個平台，一張地圖", tint=WALL)
+        for i, ((x, y), label, color) in enumerate(zip(SLOTS, LABELS, LABEL_COLORS)):
+            c.rect(f"wf{i}", x - .05, y - .05, HUB_W + .1, HUB_H + .1, None, line=(GOOD if done else INK, 2.0 if done else 1.5))
+            T(c, f"wl{i}", label, x, y - .42, HUB_W - .5, 0.36, 16, color, bold=True)
+            T(c, f"wk{i}", "✓" if done else str(i + 1), x + HUB_W - .45, y - .42, 0.5, 0.36, 16,
+              GOOD if done else MUTED, bold=True, align=PP_ALIGN.RIGHT)
+        x, y = COLS[0], ROWS[1]
+        c.card("legend", x, y, HUB_W, HUB_H, WHITE, border=LINE, shadow=False)
+        T(c, "legend_t", "五張卡片＝七個平台" if not done else "七個平台都走過了", x + .25, y + .2, HUB_W - .5, 0.5, 18, INK, bold=True)
+        T(c, "legend_b", "鏡頭依序走過每一張卡片，上一頁與下一頁就是相鄰的卡片；最後回到這張地圖。" if not done
+          else "回到地圖：每張卡片都看過了。接著進入 API 贈額與模型能力。", x + .25, y + .8, HUB_W - .5, 1.1, 15, SUB)
+    return draw
+
+
+def cursor_child():
+    """Cursor page for board mode (no hung frame, so the chart uses the full width)."""
+    def draw(c):
+        base(c, KICKERS[6], "Cursor：週池倍率")
+        for n, (tier, price, mult) in enumerate(D.CURSOR_MULTIPLIERS):
+            y = 1.95 + n * 0.62
+            T(c, f"cm{n}", f"{tier} ${price}", 0.9, y, 2.3, 0.45, 18, PLAT["Cursor"], bold=True)
+            hbar(c, f"cmb{n}", 3.3, y + .04, 7.0, 0.38, mult, 50, PLAT["Cursor"])
+            T(c, f"cmv{n}", f"{mult}×", 10.5, y, 1.2, 0.45, 18, INK, bold=True)
+        items = [("", "第一方模型週池，由 Cursor Agent／CLI、Cloud Agents、Grok Bot、Grok Chat／Voice／Imagine 共用"),
+                 ("", "第三方模型：Plus 不支援；Premium 起另購預付 credit，按 API list price"),
+                 ("", "舊制 Pro／Pro+／Ultra：兩個月池（Cursor Models／Other Models）；切換新制可選但永久")]
+        T(c, "cnotes", para_list(items), 0.9, 4.55, 11.7, 1.7, 16, SUB, after=6)
+        mark = brand_mark(CURSOR_MARK)
+        if mark:  # lockup alone, unaltered, right of the headline
+            c.picture("brand_cursor", mark, 9.9, 1.0, 2.7, 0.64, align="right")
+            T(c, "brand_credit", CURSOR_CREDIT, 0.9, 6.3, 11.7, 0.4, 14, MUTED)
+    return draw
+
+
 # ------------------------------------------------------------------------------------------------ deck
-SRC = [("", ""), ("[決策摘要]", ""), ("[C1–C3][O1][X1][G1][P1][K1][D2]", ""), ("[C1][O1][X3][G1][P1][K1][D2]", ""),
-       ("[C1][O1][X1][G1][P1][K2][D2]", ""), ("[C1–C4][O1–O2]", ""), ("[X1–X3]", ""), ("[G1–G4][P1–P3]", ""),
-       ("[K1–K3]", ""), ("[D2–D4]", ""), ("[D2][K4]；23.4 重算", ""), ("[C3–C4][O2]", ""), ("[M01]；8.2", ""),
-       ("13.1", ""), ("21", ""), ("決策摘要、第 5／21.1 節", ""), ("第 11／21.2 節", ""), ("23.3", ""), ("23.5", ""), ("23.6 證據等級", "")]
-TALK = ["封面：七個平台、七種額度算法。", "先分清四種不同的「額度」。", "七平台的入門價與最關鍵的額度規則。",
-        "價格階梯；長條只比較美元，人民幣不換算。", "各平台的閘門：5 小時、週、月。", "Claude 與 ChatGPT／Codex 的方案與官方估計。",
-        "Cursor 新制週池倍率；舊制雙月池。", "Antigravity 與 OpenCode Go 的規則。", "Kimi 新制：Plus 起才有 Kimi Code。",
-        "DeepSeek 公開單價與峰離峰。", "同一種高快取用法下，每 1 億 tokens 的 API 成本試算。", "API 贈額不等於訂閱版 Agent 額度。",
-        "同框架的獨立比較；不跨口徑排名。", "「可用」的四種意思。", "官方確值與未公開項目。", "依情境選擇。", "自己測：統一條件的 A/B。",
-        "不能直接證實的說法。", "訂閱前逐項確認。", "結語與證據等級。"]
+SRC = {"p01": "", "p02": "[決策摘要]", "p03": "[C1–C3][O1][X1][G1][P1][K1][D2]", "p04": "[C1][O1][X3][G1][P1][K1][D2]",
+       "p05": "[C1][O1][X1][G1][P1][K2][D2]", "hub": "", "p06": "[C1–C4][O1–O2]", "cursor": "[X1–X3]",
+       "p08": "[G1–G4][P1–P3]", "p09": "[K1–K3]", "p10": "[D2–D4]", "p11": "[D2][K4]；23.4 重算", "hub_done": "",
+       "p12": "[C3–C4][O2]", "p13": "[M01]；8.2", "p14": "13.1", "p15": "21", "p16": "決策摘要、第 5／21.1 節",
+       "p17": "第 11／21.2 節", "p18": "23.3", "p19": "23.5", "p20": "23.6 證據等級"}
+TALK = {"p01": "封面：七個平台、七種額度算法。", "p02": "先分清四種不同的「額度」。", "p03": "七平台的入門價與最關鍵的額度規則。",
+        "p04": "價格階梯；同一批平台換成長條，只比較美元，人民幣不換算。", "p05": "各平台的閘門：5 小時、週、月；同一批平台再換一種圖。",
+        "hub": "地圖：七個平台、五個詳細頁；鏡頭依序走過每一張卡片。", "p06": "Claude 與 ChatGPT／Codex 的方案與官方估計。",
+        "cursor": "Cursor 新制週池倍率；舊制雙月池。", "p08": "Antigravity 與 OpenCode Go 的規則。",
+        "p09": "Kimi 新制：Plus 起才有 Kimi Code。", "p10": "DeepSeek 公開單價與峰離峰。",
+        "p11": "同一種高快取用法下，每 1 億 tokens 的 API 成本試算。", "hub_done": "回到地圖：五張卡片都看過了。",
+        "p12": "API 贈額不等於訂閱版 Agent 額度。", "p13": "同框架的獨立比較；不跨口徑排名。", "p14": "「可用」的四種意思。",
+        "p15": "官方確值與未公開項目。", "p16": "依情境選擇。", "p17": "自己測：統一條件的 A/B。",
+        "p18": "不能直接證實的說法。", "p19": "訂閱前逐項確認。", "p20": "結語與證據等級。"}
+# transition INTO each slide (docs/PPTX-TRANSITION-CATALOG.md): camera moves (pan, nest, zoom_out) and in-place
+# redraws (stay) are mixed on purpose; every slide uses whatever suits its content
+ORDER = [("p01", p01, None), ("p02", p02, "stay"), ("p03", p03, "pan_right"), ("p04", p04, "stay"), ("p05", p05, "stay"),
+         ("hub", lambda: hub(False), "pan_right"), ("p06", p06, "nest"), ("cursor", cursor_child, "nest"),
+         ("p08", p08, "nest"), ("p09", p09, "nest"), ("p10", p10, "nest"), ("p11", p11, "stay"),
+         ("hub_done", lambda: hub(True), "zoom_out"), ("p12", p12, "pan_right"), ("p13", p13, "stay"),
+         ("p14", p14, "pan_right"), ("p15", p15, "stay"), ("p16", p16, "pan_down"), ("p17", p17, "stay"),
+         ("p18", p18, "pan_right"), ("p19", p19, "stay"), ("p20", p20, "pan_down")]
+N = len(ORDER)
 
 
 def build(output, hold=HOLD_MS, duration=MORPH_MS, fonts=None, brand_dir=None):
     BRAND["dir"] = brand_dir
     if fonts:
         K.set_fonts(*fonts)
-    win_tl, win_br = (0.9, 4.8, WIN_W), (8.7, 4.4, WIN_W)
     world = World(gap=0.6)
-    world.first(p01())
-    world.add(p02(), "zoom_in", window=win_tl)
-    world.add(p03(), "pull_back", frame=FRAME)
-    world.add(p04(), "pan_right")
-    world.add(p05(), "pan_right")
-    world.add(p06(), "zoom_in", window=(0.9, 4.75, WIN_W))
-    world.add(p07(), "pull_back", frame=FRAME)
-    world.add(p08(), "pan_right")
-    world.add(p09(), "pan_right")
-    world.add(p10(), "zoom_in", window=win_br)
-    world.add(p11(), "pull_back", frame=FRAME)
-    world.add(p12(), "pan_right")
-    world.add(p13(), "pan_right")
-    world.add(p14(), "zoom_in", window=win_br)
-    world.add(p15(), "pull_back", frame=FRAME)
-    world.add(p16(), "pan_right")
-    world.add(p17(), "pan_right")
-    world.add(p18(), "zoom_in", window=(0.9, 4.75, WIN_W))
-    world.add(p19(), "pull_back", frame=FRAME)
-    world.add(p20(), "pan_down")
+    keys, hub_i, slot = [], None, 0
+    for key, make, kind in ORDER:
+        if kind is None:
+            world.first(make())
+        elif kind == "nest":
+            x, y = SLOTS[slot]
+            slot += 1
+            world.add(make(), "nest", window=(x, y, HUB_W), parent=hub_i)
+        elif kind == "zoom_out":
+            world.add(make(), "zoom_out", to=hub_i)
+        else:
+            world.add(make(), kind)
+        if key == "hub":
+            hub_i = len(keys)
+        keys.append(key)
 
     def hud(c, j):
         for n in range(N):
@@ -530,11 +551,15 @@ def build(output, hold=HOLD_MS, duration=MORPH_MS, fonts=None, brand_dir=None):
         T(c, "foot", FOOTER, 4.6, 6.84, 8.0, 0.26, 14, MUTED, align=PP_ALIGN.RIGHT)
 
     def notes(j):
-        return (f"{TALK[j]}\n\n來源碼（對應使用者文件 {D.VERSION} 的原始來源索引）：{SRC[j][0]}\n"
+        key = keys[j]
+        extra = ""
+        if key == "p08" and opencode_mark():
+            extra = "\n" + OPENCODE_CREDIT + "（Logo 使用規則：官方品牌頁，存取日 2026-11-07。）"
+        if key == "cursor" and brand_mark(CURSOR_MARK):
+            extra = "\n" + CURSOR_CREDIT + "（官方品牌頁，存取日 2026-11-07；依指認性使用評估，非個別授權。）"
+        return (f"{TALK[key]}\n\n來源碼（對應使用者文件 {D.VERSION} 的原始來源索引）：{SRC[key]}\n"
                 f"資料快照 {D.SNAPSHOT}；價格與額度可能已變動，發布前需重新核對。數字取自使用者提供的文件，未獨立查證。"
-                + ("\n" + CURSOR_CREDIT + "（官方品牌頁，存取日 2026-11-07；依指認性使用評估，非個別授權。）" if j == 6 and brand_mark(CURSOR_MARK) else "")
-                + ("\n" + OPENCODE_CREDIT + "（Logo 使用規則：官方品牌頁，存取日 2026-11-07。）" if j == 7 and opencode_mark() else "")
-                + "\nPowerPoint 原生 Morph 實播狀態：NOT RUN。")
+                + extra + "\nPowerPoint 原生 Morph 實播狀態：NOT RUN。")
 
     prs = Presentation()
     prs.slide_width, prs.slide_height = Emu(int(W * EMU)), Emu(int(H * EMU))

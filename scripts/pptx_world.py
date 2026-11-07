@@ -10,6 +10,8 @@ relative to each other so that moving the camera from one slide to the next is o
                          sibling windows is a plain pan at the same zoom, so a tour needs no decorative frames
   zoom_out(to)           board mode: the camera returns to an earlier panel (the hub) and that panel is redrawn
                          (same `!!` names, so Morph continues the same objects) with its new state
+  stay                   no camera move: the previous panel is redrawn in place; objects that keep the same local name
+                         (a persistent header, the rows of a table) are tweened into their new look, the rest fade
 Every slide draws all panels that the neighbouring camera moves can see, under globally unique `!!` names, so
 PowerPoint's Morph tweens positions and sizes into one continuous shot. Text sizes are compensated so that the
 panel a slide is focused on reads at its design size.
@@ -197,6 +199,9 @@ class World:
             wx, wy, ww = kw["window"]
             par = self.panels[kw["parent"]] if "parent" in kw else prev
             panel = Panel(n, par.ox + wx * par.s, par.oy + wy * par.s, par.s * ww / W, draw, kind)
+        elif kind == "stay":
+            panel = Panel(n, prev.ox, prev.oy, prev.s, draw, kind, target=True, rank=prev.rank, name_idx=prev.name_idx,
+                          replaces=prev.idx)
         elif kind == "zoom_out":
             to = self.panels[kw["to"]]
             panel = Panel(n, to.ox, to.oy, to.s, draw, kind, target=True, rank=to.rank, name_idx=to.name_idx,
