@@ -3,8 +3,10 @@
 
 Source: the user's document "AI Coding / Agent 七平台訂閱比較 v5.1" (snapshot 2026-11-03). Figures are transcribed in
 scripts/ai_subscriptions_data.py; they were NOT re-verified against vendor pages and every slide carries the
-snapshot date. Visuals are charts and diagrams drawn from the document's numbers as editable shapes: no vendor logos,
-screenshots or other third-party imagery are used (no rights to them are on record).
+snapshot date. Visuals are charts and diagrams drawn from the document's numbers as editable shapes. The ONLY
+third-party mark is the OpenCode wordmark (slide 8), used because its official brand page publishes the file and rules
+(docs/ASSET-RIGHTS.md); it is fetched by scripts/brand_assets.py, SHA256-checked, and skipped if absent. All other
+platforms stay text-only: their terms do not permit use without approval, or could not be read.
 
 Transitions (one continuous world, scripts/pptx_world.py): zoom-through -> pull-back reveal triples with pans between.
 STATUS: SPIKE/PREVIEW. Layers A and B only; PowerPoint playback and video export are NOT RUN.
@@ -25,12 +27,16 @@ from pptx.util import Emu
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ai_subscriptions_data as D  # noqa: E402
 import deck_kit as K  # noqa: E402
+import brand_assets  # noqa: E402
 import pptx_morph_patch  # noqa: E402
 from deck_kit import (BAD, CARD, COPPER, DARK, DARKSUB, DARKTXT, FRAME, GOOD, INK, LINE, MUTED, SUB, WALL, WHITE,  # noqa: E402
                       WIN_W, T, base, frame, hbar, line, para_list, row_cells, window)
 from pptx_world import EMU, H, W, World  # noqa: E402
 
 HOLD_MS, MORPH_MS = 8000, 1500
+OPENCODE_MARK = "opencode-wordmark-light.png"
+BRAND = {"dir": None}  # set by build(); the mark is used only if present and matching its pinned SHA256
+OPENCODE_CREDIT = "OpenCode 標誌取自官方品牌頁 opencode.ai/brand；商標屬 Anomaly，本簡報與其無關聯、非其背書。"
 N = 20
 FOOTER = f"資料快照 {D.SNAPSHOT}（{D.VERSION}）· 取自提供文件，未重新核對"
 PLAT = {"Claude": "C35F3F", "ChatGPT": "2E7D5B", "Cursor": "3B6EA5", "Antigravity": "7A5BB0",
@@ -155,12 +161,26 @@ def p05():
     return draw
 
 
-def two_cards(c, left, right, tag_l, tag_r, kicker):
+def opencode_mark():
+    """Path of the verified OpenCode wordmark, or None (deck then shows text only)."""
+    if not BRAND["dir"]:
+        return None
+    path = Path(BRAND["dir"]) / OPENCODE_MARK
+    return path if brand_assets.verify(path, brand_assets.ASSETS[OPENCODE_MARK]["sha256"]) else None
+
+
+def two_cards(c, left, right, tag_l, tag_r, kicker, mark=None):
     for x, (title, items), color in ((0.9, left, PLAT[tag_l]), (6.8, right, PLAT[tag_r])):
         c.card(f"card{int(x)}", x, 1.8, 5.87, 4.85, WHITE, border=LINE, shadow=False)
         c.rect(f"bar{int(x)}", x, 1.8, 5.87, 0.09, color)
-        T(c, f"ttl{int(x)}", title, x + .3, 2.05, 5.3, 0.55, 26, color, bold=True)
-        T(c, f"body{int(x)}", para_list(items), x + .3, 2.8, 5.35, 3.75, 16, SUB, after=7)
+        has_mark = mark is not None and x > 6
+        T(c, f"ttl{int(x)}", title, x + .3, 2.05, 3.0 if has_mark else 5.3, 0.55, 26, color, bold=True)
+        body_h = 3.15 if has_mark else 3.75
+        T(c, f"body{int(x)}", para_list(items), x + .3, 2.8, 5.35, body_h, 16, SUB, after=7)
+        if has_mark:
+            # wordmark alone (no words beside it); box keeps >= 2 strokes of clear space on every side
+            c.picture("brand_opencode", mark, x + 3.55, 2.1, 2.0, 0.5)
+            T(c, "brand_credit", OPENCODE_CREDIT, x + .3, 6.0, 5.35, 0.6, 14, MUTED)
 
 
 def p06():
@@ -208,7 +228,7 @@ def p08():
 
     def draw(c):
         base(c, KICKERS[7], None)
-        two_cards(c, left, right, "Antigravity", "OpenCode", KICKERS[7])
+        two_cards(c, left, right, "Antigravity", "OpenCode", KICKERS[7], mark=opencode_mark())
     return draw
 
 
@@ -467,7 +487,8 @@ TALK = ["封面：七個平台、七種額度算法。", "先分清四種不同�
         "不能直接證實的說法。", "訂閱前逐項確認。", "結語與證據等級。"]
 
 
-def build(output, hold=HOLD_MS, duration=MORPH_MS, fonts=None):
+def build(output, hold=HOLD_MS, duration=MORPH_MS, fonts=None, brand_dir=None):
+    BRAND["dir"] = brand_dir
     if fonts:
         K.set_fonts(*fonts)
     win_tl, win_br = (0.9, 4.8, WIN_W), (8.7, 4.4, WIN_W)
@@ -501,7 +522,8 @@ def build(output, hold=HOLD_MS, duration=MORPH_MS, fonts=None):
     def notes(j):
         return (f"{TALK[j]}\n\n來源碼（對應使用者文件 {D.VERSION} 的原始來源索引）：{SRC[j][0]}\n"
                 f"資料快照 {D.SNAPSHOT}；價格與額度可能已變動，發布前需重新核對。數字取自使用者提供的文件，未獨立查證。"
-                "\nPowerPoint 原生 Morph 實播狀態：NOT RUN。")
+                + ("\n" + OPENCODE_CREDIT + "（Logo 使用規則：官方品牌頁，存取日 2026-11-07。）" if j == 7 and opencode_mark() else "")
+                + "\nPowerPoint 原生 Morph 實播狀態：NOT RUN。")
 
     prs = Presentation()
     prs.slide_width, prs.slide_height = Emu(int(W * EMU)), Emu(int(H * EMU))
@@ -522,9 +544,12 @@ def main():
     ap.add_argument("--font-sans", default=K.FONTS["sans"], help="must be installed where the deck is played")
     ap.add_argument("--font-serif", default=K.FONTS["serif"])
     ap.add_argument("--font-mono", default=K.FONTS["mono"])
+    ap.add_argument("--brand-dir", type=Path, default=Path("build/ai-subscriptions/brand"),
+                    help="where scripts/brand_assets.py wrote the OpenCode wordmark (used only if SHA256 matches)")
     args = ap.parse_args()
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    world = build(args.output, args.hold, args.duration, (args.font_sans, args.font_serif, args.font_mono))
+    world = build(args.output, args.hold, args.duration, (args.font_sans, args.font_serif, args.font_mono),
+                  args.brand_dir)
     print(f"{args.output}: {N} slides, {N - 1} native Morph transitions (SPIKE; PowerPoint playback NOT RUN)")
     print("zoom ratios:", sorted({round(z, 2) for _, _, _, z in world.describe()}))
 

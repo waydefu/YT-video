@@ -5,6 +5,8 @@ on:
       - 'scripts/ai_subscriptions_data.py'
       - 'scripts/build_ai_subscriptions_deck.py'
       - 'scripts/deck_kit.py'
+      - 'scripts/brand_assets.py'
+      - 'tests/test_brand_assets.py'
       - 'scripts/pptx_world.py'
       - 'scripts/pptx_morph_proxy.py'
       - 'scripts/pptx_validate.py'
@@ -31,7 +33,7 @@ jobs:
         run: python -m pip install --disable-pip-version-check "python-pptx==1.0.2" "Pillow==11.3.0"
       - name: Unit tests (layer A; includes the document's own arithmetic)
         run: python -m unittest discover -s tests -v
-      - name: Build the 20-slide deck (no network, no external imagery)
+      - name: Build the 20-slide deck (CI: text-only, no brand image fetched)
         run: python scripts/build_ai_subscriptions_deck.py --output build/ai-subscriptions/ai-subscriptions-deck.pptx
       - name: Validate structure (layer A only; not PowerPoint playback)
         run: |

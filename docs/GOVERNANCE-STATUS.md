@@ -11,7 +11,7 @@
 | 片頭 **現行創意需求** | [`SHOTLIST.md`](SHOTLIST.md) | 左燈→右燈、兩次低音開燈聲、只有粉塵、地面灰塵逆向重組 Logo；尚未證明程式符合 |
 | 片頭 V4 技術實驗 | [`V4-ASSETS.md`](V4-ASSETS.md)、`../blender/v4_opening.py` | 高品質 CC0 模型、3D smoke；不是最終已驗收的片頭 |
 | Canva 研究 | [`CANVA-CINEMATIC-MOTION.md`](CANVA-CINEMATIC-MOTION.md) | 資料／研究，非 Canva 原生動畫作品 |
-| AI 訂閱額度比較簡報 | [`AI-SUBSCRIPTIONS-DECK.md`](AI-SUBSCRIPTIONS-DECK.md) | 20 頁 PREVIEW；資料取自使用者文件（快照 11/03，未重新核對）；原創圖表，無第三方圖像；實播未驗 |
+| AI 訂閱額度比較簡報 | [`AI-SUBSCRIPTIONS-DECK.md`](AI-SUBSCRIPTIONS-DECK.md) | 20 頁 PREVIEW；資料取自使用者文件（快照 11/03，未重新核對）；原創圖表；僅 OpenCode 文字標有授權紀錄（其餘平台純文字）；實播未驗 |
 | 2D 環境循環技術 | [`PPTX-LIVE-MOTION.md`](PPTX-LIVE-MOTION.md) | 工具能力實驗，非 Anatomy 主線交付，也不等同 Live2D |
 | 舊 Anatomy 四頁實驗 | [`ANATOMY-SPIKE-QA.md`](ANATOMY-SPIKE-QA.md)、[`ANATOMY-RAPTOR-V5-QA.md`](ANATOMY-RAPTOR-V5-QA.md) | 只留作歷史比對；不要當目前 Anatomy 作品 |
 | 片頭 **V3 舊分鏡** | [`archive/SHOTLIST-V3-LEGACY.md`](archive/SHOTLIST-V3-LEGACY.md) | 歷史資料，含已取消的石裂／碎石；**禁止當現行規格** |
