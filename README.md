@@ -1,28 +1,43 @@
 # BROKE TRIO — YT-video
 
-繁中影音製作工作區，涵蓋四條互相獨立的製作線；**沒有任何一條已是 FINAL-APPROVED**。
+繁中影音製作工作區。**目前沒有任何一條製作線完成最終美術與原生播放驗收**；工作流或 PR 合併不代表成品達標。
 
-| 製作線 | 狀態 | 阻擋點 |
+### 現行入口（先看這裡）
+
+| 製作線 | 現況 | 主要阻擋點 |
 | --- | --- | --- |
-| Blender 片頭（V3 程序化 blockout → V4 授權大理石半身像 + 依序聚光燈） | SPIKE / PREVIEW：CI 可產生 smoke 幀與 24 fps 預覽，**尚未經人工美術驗收** | 需人工檢視畫面；崩解／重組段落尚未製作 |
-| Canva 動態簡報技巧庫 | RESEARCH：只有文件，**沒有做出任何 Canva 樣片** | 需先做 10–15 秒最難轉場樣片 |
-| PowerPoint Morph + Anatomy 官方素材 4 鏡頭（#6）與單一 Raptor 場景（#7） | SPIKE / CANDIDATE：結構與靜態由 CI 產出 | **PowerPoint 實播 BLOCKED** |
-| **Anatomy 科普簡報（13 頁，官方原始資料圖 + 無縫 Morph 轉場）** | **SPIKE / PREVIEW**：結構、靜態、轉場代理幀已自查 | **PowerPoint 實播、匯出影片、手機觀看 BLOCKED／NOT RUN**；事實待人工核對 |
-| **科普 YT 正式簡報 + 無縫 Morph 轉場（主線）** | **SPIKE**：4 頁樣片（鑽進視窗、平移、畫框拉遠揭露），結構與轉場代理幀已自查 | **PowerPoint 實播與匯出影片 BLOCKED**；事實待審 |
-| 選用：環境動態層（Living Scene 角色僅為能力示範，非交付物） | SPIKE：循環動畫已注入，結構測試通過 | PowerPoint 實播 BLOCKED |
+| **Anatomy 13 頁科普簡報** | **SPIKE / PREVIEW**；官方素材、Morph 結構與靜態代理已有建置證據 | **PowerPoint 未實播**、手機閱讀及事實人工複核未通過 |
+| **BROKE TRIO Blender V4 片頭** | 使用授權 CC0 雕像的 3D 技術預覽，**非最終成品** | 現行「低音開燈、只有粉塵、地面逆時間重組 Logo」尚未核實已實作 |
+| **可重用科普 Morph 工具組** | 4 頁示範、轉場插補代理及 QA 腳本 | 只屬技術樣片；**PowerPoint 未實播** |
 
-以下 Blender 段落描述原始 V3 設計；V4 的素材與時間線見 `docs/V4-ASSETS.md`。
+### 歷史研究／非當前交付物
 
-## 這一版要做什麼
+| 類別 | 狀態 |
+| --- | --- |
+| Canva 電影式動畫技巧 | RESEARCH：文件與配方，不是已驗證的 Canva 原生動畫 |
+| Anatomy #6 四頁展示牆、#7 單一 Raptor | 舊候選與失敗紀錄，保留可追溯性；現行內容以 13 頁簡報為準 |
+| Living Scene 2D 循環工具 | SPIKE：技術能力研究，不等同 Live2D，也不是 Anatomy 正式作品 |
+| Blender V3 程序化石像 | 歷史 blockout；**石裂／碎石方案已不符合現行要求** |
 
-10 秒、16:9、1920×1080、24 FPS，黑場體積霧 → **左燈亮／滅** → **右燈亮／滅** → 石像穿煙而出 → 同一鏡頭推至臉部 → 龜裂碎石 → 3D 粒子落下重組三尊雕像 → 片名定格。**兩盞燈不重疊；兩盞皆熄滅後雕像才出場。**
+### 治理與目前規格
+
+- [專案治理與分支／CI 盤點](docs/GOVERNANCE-STATUS.md)：現行／歷史入口、手動 GitHub `main` 保護步驟與仍待實播項目。
+- [現行 BROKE TRIO 片頭分鏡](docs/SHOTLIST.md)：兩盞燈依序開／關，燈聲僅重低音；粉塵時間反轉重組 Logo，不做石裂／碎石。
+- [V3 舊分鏡封存](docs/archive/SHOTLIST-V3-LEGACY.md)：僅供追溯，**不得作新影片標準**。
+- [G0–G5 品質治理](docs/QUALITY-GATED-WORKFLOW.md) 與 [P0–P9 科普簡報製作流程](docs/WORKFLOW-EXPLAINER-DECK.md)。
+
+以下 Blender 工程與設定部分仍可能反映 V3／V4 實驗，**更新分鏡不等於既有程式已改成粉塵版**。需要在獨立的製片 PR 裡修改、渲染和驗收。
+
+## 現行片頭想達成什麼
+
+10 秒、16:9、1920×1080、24 FPS：黑場體積霧 → 左燈亮／滅 → 右燈亮／滅 → 雕像於兩燈熄滅後出場、鏡頭推近 → **粉塵轉場（不裂石、不掉碎石）** → 地面粉塵如時間倒轉般匯聚成品牌 Logo → `BROKE TRIO` 定格。亮燈音效**只用重低音開燈聲**；分鏡順序以 `docs/SHOTLIST.md` 為準，秒數仍需實際樣片確認。
 
 ## Repo 導覽
 
 | 位置 | 作用 |
 | --- | --- |
 | `blender/scene.py` | 程序化石像、4D 噪聲體積霧、兩盞聚光燈、鏡頭、3D 粒子、排版與合成 |
-| `scripts/soundtrack.py` | 自製立體聲低頻、煙霧、打光與破碎音效，不使用外部樣本 |
+| `scripts/soundtrack.py` | V3 原創聲效腳本（含已淘汰的碎裂效果）；不得直接視為現行聲音契約 |
 | `scripts/render.sh` | Smoke 五幀驗證、Preview/Final 渲染、FFmpeg 輸出 |
 | `scripts/validate_media.py` | 影片寬高、比例、FPS、編碼、音訊、時長驗證 |
 | `config/production.json` | 比例、安全邊界、時間線規格 |
@@ -49,7 +64,7 @@ bash scripts/render.sh final
 
 - 3D 石像是原創程序化幾何的**預演模型**，不是高精度雕塑掃描。
 - 煙霧是 Blender 3D volumetric shader，不是 Mantaflow 流體模擬。
-- 崩解採 deterministic 粒子拋物運動，不是烘焙的 rigid-body 碰撞物理。
+- **歷史 V3** 崩解採 deterministic 粒子拋物運動而非 rigid-body 碰撞；**此設計已被現行「僅粉塵」要求取代，相關程式尚待修改**。
 - CI 靜態檢查不能證明畫質達標；需先跑 smoke、人工檢視構圖、修飾角色臉部與碎片，完整渲染後再手動驗收。
 - 不使用對話中的他人圖片作最終影片素材，Research- 裡的技術連結也不代表可複製其影像、音樂或模型。
 
@@ -101,7 +116,7 @@ python3 scripts/pptx_morph_patch.py morph-draft.pptx morph-native.pptx --duratio
 python3 -m unittest discover -s tests -v
 ```
 
-**限制**：PPTX OOXML 結構可在 CI 驗證，但真正的 Morph 影格品質仍須在支援 Morph 的 PowerPoint 播放檢查；LibreOffice 靜態輸出不等於 Morph 通過。本 repo 內實際可重現的 Anatomy 樣片是 **4 頁 / 3 段 Morph 的 spike**（`scripts/anatomy_official_morph_spike.py`，CI 產出，見 `docs/ANATOMY-SPIKE-QA.md`）；較早對話中提到的 14 頁研究樣片**不在此 repo**，也未經實播驗收。
+**限制**：PPTX OOXML 結構可在 CI 驗證，但真正的 Morph 影格品質仍須在支援 Morph 的 PowerPoint 播放檢查；LibreOffice 靜態輸出不等於 Morph 通過。Anatomy **4 頁 / 3 段 Morph spike 為歷史樣片**（`scripts/anatomy_official_morph_spike.py`，見 `docs/ANATOMY-SPIKE-QA.md`）；**現行主線是 13 頁 Anatomy 科普簡報**，同樣尚未實播驗收。較早對話的 14 頁研究樣片不在此 repo。
 
 ## Anatomy 科普簡報（官方原始資料圖 + 無縫 Morph 轉場）
 
