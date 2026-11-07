@@ -1,5 +1,7 @@
 # PowerPoint 原生 Morph 電影式動態簡報研究與製作手冊
 
+> **完整製作流程請見 [`WORKFLOW-EXPLAINER-DECK.md`](WORKFLOW-EXPLAINER-DECK.md)**；本檔是 Morph 轉場配方與早期研究。文中的「14 頁／13 段 Morph」是較早對話中的研究樣片，**不在此 repo、未經實播驗收**；repo 內可重現的成品是 [`ANATOMY-EXPLAINER.md`](ANATOMY-EXPLAINER.md)（13 頁、12 段）。
+
 > 2026-11-06｜適用 `waydefu/YT-video`｜狀態：**OOXML 及靜態畫面經本地驗證；Microsoft PowerPoint Morph 實播未驗證**。與既有 Blender 片頭、Canva 技巧庫分開；不得把 MP4 冒充 PPTX 原生轉場。
 
 > **要做「簡報一播放就像 Live 2D」的連續待機動作，請接著讀 [`PPTX-LIVE-MOTION.md`](PPTX-LIVE-MOTION.md)**（自動播放循環動態層、驗證器與能力邊界）。本檔專注於 Morph 轉場配方。

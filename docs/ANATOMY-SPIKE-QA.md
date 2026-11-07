@@ -1,5 +1,7 @@
 # Anatomy 10–15 秒 PowerPoint 原生 Morph 樣片 — 品質紀錄
 
+> **歷史紀錄**：這是#6 的 4 頁橫向展示牆 spike的自驗報告。目前的 Anatomy 簡報是 [`ANATOMY-EXPLAINER.md`](ANATOMY-EXPLAINER.md)（13 頁、官方素材管線、世界面板轉場）；此檔保留供比對，不代表最新狀態。
+
 **狀態：SPIKE / CANDIDATE；非 FINAL。** 不影響原 Blender 片頭，不能以 MP4 或靜態 Canva 假扮原生 PPT 動畫。
 
 ## 交付契約
