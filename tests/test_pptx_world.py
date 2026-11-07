@@ -77,6 +77,31 @@ class WorldGeometry(unittest.TestCase):
         self.assertNotIn(2, ids(1))
         self.assertIn(2, ids(2))
 
+    def test_stay_redraws_in_place_with_the_same_names(self):
+        w = World(gap=0.6)
+        w.first(noop)
+        w.add(noop, "stay")
+        w.add(noop, "stay")
+        w.add(noop, "pan_right")
+        a, b, c, d = w.panels
+        for p in (b, c, d):
+            self.assertEqual((p.ox, p.oy) if p is not d else (a.ox, a.oy), (a.ox, a.oy))
+        self.assertEqual((b.s, c.s), (a.s, a.s))
+        self.assertEqual(c.name_idx, a.name_idx)  # a chain of stays keeps one namespace
+        ids = lambda j: [p.idx for p in w._visible(j)]  # noqa: E731
+        self.assertEqual([i for i in ids(0) if i < 3], [0])
+        self.assertEqual([i for i in ids(1) if i < 3], [1])  # each stay replaces the previous drawing
+        self.assertEqual([i for i in ids(2) if i < 3], [2])
+        self.assertAlmostEqual(d.ox, a.ox + W + 0.6)  # a pan after stays continues from the same place
+
+    def test_stay_inside_a_nested_window_keeps_the_miniature_scale(self):
+        w = World(gap=0.6)
+        w.first(noop)
+        w.add(noop, "nest", window=(0.9, 2.2, 3.6), parent=0)
+        w.add(noop, "stay")
+        self.assertAlmostEqual(w.panels[2].s, w.panels[1].s)
+        self.assertAlmostEqual(w.view(2)[2], w.view(1)[2])
+
 
 @unittest.skipIf(Presentation is None, "python-pptx not installed")
 class WorldDrawing(unittest.TestCase):
@@ -111,6 +136,60 @@ class WorldDrawing(unittest.TestCase):
         w.first(draw)
         with self.assertRaises(ValueError):
             w.build(Presentation())
+
+
+@unittest.skipIf(Presentation is None, "python-pptx not installed")
+class BoardMode(unittest.TestCase):
+    """nest(parent) + zoom_out(to): a hub with sibling windows that the camera pans between, then returns to."""
+
+    def make(self):
+        w = World(gap=0.6)
+        w.first(noop)
+        w.add(noop, "nest", window=(0.9, 2.2, 3.6), parent=0)
+        w.add(noop, "nest", window=(4.95, 2.2, 3.6), parent=0)
+        w.add(noop, "zoom_out", to=0)
+        return w
+
+    def test_siblings_share_scale_and_are_nested_in_the_hub(self):
+        w = self.make()
+        hub, a, b = w.panels[0], w.panels[1], w.panels[2]
+        self.assertAlmostEqual(a.s, 3.6 / W)
+        self.assertAlmostEqual(a.s, b.s)  # panning between them is a plain pan: no zoom change
+        self.assertAlmostEqual(b.ox - a.ox, 4.05)
+        self.assertAlmostEqual(a.oy, hub.oy + 2.2)
+        self.assertAlmostEqual(w.view(2)[2] / w.view(1)[2], 1.0)
+
+    def test_zoom_out_revisits_the_hub_with_the_same_names_and_replaces_it(self):
+        w = self.make()
+        hub, back = w.panels[0], w.panels[3]
+        self.assertEqual((back.ox, back.oy, back.s), (hub.ox, hub.oy, hub.s))
+        self.assertEqual(back.name_idx, hub.name_idx)  # same `!!` names, so Morph continues the same objects
+        ids = lambda j: [p.idx for p in w._visible(j)]  # noqa: E731
+        self.assertIn(0, ids(2))
+        self.assertNotIn(3, ids(2))  # the revisit exists only from its own slide on
+        self.assertIn(3, ids(3))
+        self.assertNotIn(0, ids(3))  # and it replaces the original: each object is drawn once
+
+    def test_every_slide_has_unique_names_and_the_hub_keeps_its_names(self):
+        def hub(ctx):
+            ctx.rect("card", 0, 0, W, H, "FFFFFF")
+
+        def child(ctx):
+            ctx.rect("card", 0, 0, W, H, "EEEEEE")
+
+        w = World(gap=0.6)
+        w.first(hub)
+        w.add(child, "nest", window=(0.9, 2.2, 3.6), parent=0)
+        w.add(hub, "zoom_out", to=0)
+        prs = Presentation()
+        prs.slide_width, prs.slide_height = Emu(int(W * 914400)), Emu(int(H * 914400))
+        w.build(prs)
+        per_slide = [[s.name for s in sl.shapes] for sl in prs.slides]
+        for names in per_slide:
+            self.assertEqual(len(names), len(set(names)))
+        self.assertIn("!!P00_card", per_slide[0])
+        self.assertIn("!!P00_card", per_slide[2])  # the revisited hub reuses the original names
+        self.assertNotIn("!!P02_card", per_slide[2])
 
 
 if __name__ == "__main__":

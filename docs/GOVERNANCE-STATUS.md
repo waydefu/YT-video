@@ -11,6 +11,7 @@
 | 片頭 **現行創意需求** | [`SHOTLIST.md`](SHOTLIST.md) | 左燈→右燈、兩次低音開燈聲、只有粉塵、地面灰塵逆向重組 Logo；尚未證明程式符合 |
 | 片頭 V4 技術實驗 | [`V4-ASSETS.md`](V4-ASSETS.md)、`../blender/v4_opening.py` | 高品質 CC0 模型、3D smoke；不是最終已驗收的片頭 |
 | Canva 研究 | [`CANVA-CINEMATIC-MOTION.md`](CANVA-CINEMATIC-MOTION.md) | 資料／研究，非 Canva 原生動畫作品 |
+| AI 訂閱額度比較簡報 | [`AI-SUBSCRIPTIONS-DECK.md`](AI-SUBSCRIPTIONS-DECK.md) | 22 頁 PREVIEW（混合式轉場）；資料取自使用者文件（快照 11/03，未重新核對）；原創圖表；僅 OpenCode、Cursor 標誌有授權狀態紀錄（其餘平台純文字）；實播未驗 |
 | 2D 環境循環技術 | [`PPTX-LIVE-MOTION.md`](PPTX-LIVE-MOTION.md) | 工具能力實驗，非 Anatomy 主線交付，也不等同 Live2D |
 | 舊 Anatomy 四頁實驗 | [`ANATOMY-SPIKE-QA.md`](ANATOMY-SPIKE-QA.md)、[`ANATOMY-RAPTOR-V5-QA.md`](ANATOMY-RAPTOR-V5-QA.md) | 只留作歷史比對；不要當目前 Anatomy 作品 |
 | 轉場手法研究（依內容類型選用） | [`PPTX-TRANSITION-CATALOG.md`](PPTX-TRANSITION-CATALOG.md) | RESEARCH；微軟官方三頁已讀（A），其餘為第三方說法（B/C）；逐頁分配僅為提案；PowerPoint 實播與匯出影片未驗證 |
