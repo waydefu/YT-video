@@ -7,6 +7,7 @@
 | 製作線 | 現況 | 主要阻擋點 |
 | --- | --- | --- |
 | **Anatomy 13 頁科普簡報** | **SPIKE / PREVIEW**；官方素材、Morph 結構與靜態代理已有建置證據 | **PowerPoint 未實播**、手機閱讀及事實人工複核未通過 |
+| **AI Coding／Agent 七平台訂閱額度比較簡報（20 頁）** | **SPIKE / PREVIEW**；依使用者文件 v5.1（快照 2026-11-03）繪製的原創圖表 + 無縫 Morph；說明見 [`docs/AI-SUBSCRIPTIONS-DECK.md`](docs/AI-SUBSCRIPTIONS-DECK.md) | **PowerPoint 未實播**；價格與額度**未向供應商重新核對**，發布前必須更新 |
 | **BROKE TRIO Blender V4 片頭** | 使用授權 CC0 雕像的 3D 技術預覽，**非最終成品** | 現行「低音開燈、只有粉塵、地面逆時間重組 Logo」尚未核實已實作 |
 | **可重用科普 Morph 工具組** | 4 頁示範、轉場插補代理及 QA 腳本 | 只屬技術樣片；**PowerPoint 未實播** |
 
