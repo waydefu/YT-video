@@ -6,6 +6,12 @@ relative to each other so that moving the camera from one slide to the next is o
   pan_right / pan_down   the next panel sits beside / below the previous one at the same scale
   zoom_in(window)        the next panel is a miniature "window" inside a reserved box of the previous panel
   pull_back(frame)       the previous panel turns out to be a picture hanging in a reserved frame of a bigger next panel
+  nest(window, parent)   board mode: the next panel sits in a window of ANY earlier panel (the "hub"); moving between
+                         sibling windows is a plain pan at the same zoom, so a tour needs no decorative frames
+  zoom_out(to)           board mode: the camera returns to an earlier panel (the hub) and that panel is redrawn
+                         (same `!!` names, so Morph continues the same objects) with its new state
+  stay                   no camera move: the previous panel is redrawn in place; objects that keep the same local name
+                         (a persistent header, the rows of a table) are tweened into their new look, the rest fade
 Every slide draws all panels that the neighbouring camera moves can see, under globally unique `!!` names, so
 PowerPoint's Morph tweens positions and sizes into one continuous shot. Text sizes are compensated so that the
 panel a slide is focused on reads at its design size.
@@ -33,9 +39,11 @@ def rgb(h):
 
 
 class Panel:
-    def __init__(self, idx, ox, oy, s, draw, kind, target=False, rank=None):
+    def __init__(self, idx, ox, oy, s, draw, kind, target=False, rank=None, name_idx=None, replaces=None):
         self.idx, self.ox, self.oy, self.s, self.draw, self.kind, self.target = idx, ox, oy, s, draw, kind, target
         self.rank = idx if rank is None else rank
+        self.name_idx = idx if name_idx is None else name_idx  # a revisited panel keeps its original object names
+        self.replaces = replaces  # index of the panel this one is a redraw of (that one is no longer drawn from here on)
 
     @property
     def rect(self):
@@ -64,7 +72,7 @@ class Ctx:
         return Emu(int(round(v * EMU)))
 
     def _name(self, name):
-        return f"!!P{self.p.idx:02d}_{name}"
+        return f"!!P{self.p.name_idx:02d}_{name}"
 
     def _track(self, name, w, h):
         self.biggest = max(self.biggest, (max(w, h), name))
@@ -187,9 +195,17 @@ class World:
             panel = Panel(n, prev.ox + (W + self.gap) * prev.s, prev.oy, prev.s, draw, kind)
         elif kind == "pan_down":
             panel = Panel(n, prev.ox, prev.oy + (H + self.gap) * prev.s, prev.s, draw, kind)
-        elif kind == "zoom_in":
+        elif kind in ("zoom_in", "nest"):
             wx, wy, ww = kw["window"]
-            panel = Panel(n, prev.ox + wx * prev.s, prev.oy + wy * prev.s, prev.s * ww / W, draw, kind)
+            par = self.panels[kw["parent"]] if "parent" in kw else prev
+            panel = Panel(n, par.ox + wx * par.s, par.oy + wy * par.s, par.s * ww / W, draw, kind)
+        elif kind == "stay":
+            panel = Panel(n, prev.ox, prev.oy, prev.s, draw, kind, target=True, rank=prev.rank, name_idx=prev.name_idx,
+                          replaces=prev.idx)
+        elif kind == "zoom_out":
+            to = self.panels[kw["to"]]
+            panel = Panel(n, to.ox, to.oy, to.s, draw, kind, target=True, rank=to.rank, name_idx=to.name_idx,
+                          replaces=to.idx)
         elif kind == "pull_back":
             fx, fy, fw = kw["frame"]
             s = prev.s * W / fw
@@ -214,9 +230,12 @@ class World:
         if not boxes:
             boxes = [rects[0]]
         out = []
+        replaced = {q.replaces for q in self.panels if q.replaces is not None and q.idx <= j}
         for p in self.panels:
             if p.target and j < p.idx:
                 continue  # a pull-back scene only exists from its own slide on (Morph fades it in)
+            if p.idx in replaced:
+                continue  # a revisited panel is drawn once: by its newest redraw
             r = p.rect
             if any(r[0] < b[2] and r[2] > b[0] and r[1] < b[3] and r[3] > b[1] for b in boxes):
                 out.append(p)

@@ -1,0 +1,70 @@
+name: AI subscriptions deck (data checks, structure, static stills, Morph proxy)
+on:
+  pull_request:
+    paths:
+      - 'scripts/ai_subscriptions_data.py'
+      - 'scripts/build_ai_subscriptions_deck.py'
+      - 'scripts/deck_kit.py'
+      - 'scripts/brand_assets.py'
+      - 'tests/test_brand_assets.py'
+      - 'scripts/pptx_world.py'
+      - 'scripts/pptx_morph_proxy.py'
+      - 'scripts/pptx_validate.py'
+      - 'scripts/pptx_morph_patch.py'
+      - 'tests/test_ai_subscriptions_data.py'
+      - 'tests/test_pptx_*.py'
+      - 'docs/AI-SUBSCRIPTIONS-DECK.md'
+      - '.github/workflows/ai-subscriptions-deck.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-and-inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Install Python packages
+        run: python -m pip install --disable-pip-version-check "python-pptx==1.0.2" "Pillow==11.3.0"
+      - name: Unit tests (layer A; includes the document's own arithmetic)
+        run: python -m unittest discover -s tests -v
+      - name: Build the 22-slide deck (CI is text-only; no brand image fetched)
+        run: python scripts/build_ai_subscriptions_deck.py --output build/ai-subscriptions/ai-subscriptions-deck.pptx
+      - name: Validate structure (layer A only; not PowerPoint playback)
+        run: |
+          python scripts/pptx_validate.py build/ai-subscriptions/ai-subscriptions-deck.pptx --min-loops 0 --strict \
+            --readable build/ai-subscriptions/ai-subscriptions-deck.readable.json
+      - name: Build Morph geometry proxy (can reject a design, never prove playback)
+        run: python scripts/pptx_morph_proxy.py build/ai-subscriptions/ai-subscriptions-deck.pptx build/ai-subscriptions/proxy.pptx --steps 3
+      - name: Render static stills and proxy frames (layer B)
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
+            libreoffice-impress poppler-utils fonts-noto-cjk fonts-dejavu-core >/dev/null
+          mkdir -p build/ai-subscriptions/stills build/ai-subscriptions/proxy
+          timeout 300s libreoffice -env:UserInstallation=file:///tmp/lo-aisub-ci --headless --convert-to pdf \
+            --outdir build/ai-subscriptions/stills build/ai-subscriptions/ai-subscriptions-deck.pptx
+          timeout 600s libreoffice -env:UserInstallation=file:///tmp/lo-aisub-ci --headless --convert-to pdf \
+            --outdir build/ai-subscriptions/proxy build/ai-subscriptions/proxy.pptx
+          pdftoppm -r 60 -png build/ai-subscriptions/stills/ai-subscriptions-deck.pdf build/ai-subscriptions/stills/frame
+          pdftoppm -r 34 -png build/ai-subscriptions/proxy/proxy.pdf build/ai-subscriptions/proxy/frame
+          test "$(ls build/ai-subscriptions/stills/frame-*.png | wc -l)" -eq 22
+          test "$(ls build/ai-subscriptions/proxy/frame-*.png | wc -l)" -eq 85
+          echo "STATIC + PROXY QA only. PowerPoint playback, video export and phone viewing are NOT verified."
+      - name: Upload deck and visual evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ai-subscriptions-deck
+          path: |
+            build/ai-subscriptions/ai-subscriptions-deck.pptx
+            build/ai-subscriptions/ai-subscriptions-deck.readable.json
+            build/ai-subscriptions/stills/frame-*.png
+            build/ai-subscriptions/proxy/frame-*.png
+          retention-days: 14
+          if-no-files-found: error
