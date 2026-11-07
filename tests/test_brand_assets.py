@@ -10,8 +10,8 @@ import brand_assets as B  # noqa: E402
 
 class Pins(unittest.TestCase):
     def test_only_confirmed_vendor_is_listed(self):
-        # Anthropic, OpenAI, Cursor, Google, Kimi and DeepSeek are deliberately absent: terms do not permit or are unconfirmed.
-        self.assertEqual({a["vendor"] for a in B.ASSETS.values()}, {"OpenCode"})
+        # Anthropic, Google and DeepSeek stay text-only; OpenAI and Kimi have no obtainable official file yet.
+        self.assertEqual({a["vendor"] for a in B.ASSETS.values()}, {"OpenCode", "Cursor"})
 
     def test_every_asset_records_terms_and_hash(self):
         for name, a in B.ASSETS.items():

@@ -3,10 +3,10 @@
 
 Source: the user's document "AI Coding / Agent 七平台訂閱比較 v5.1" (snapshot 2026-11-03). Figures are transcribed in
 scripts/ai_subscriptions_data.py; they were NOT re-verified against vendor pages and every slide carries the
-snapshot date. Visuals are charts and diagrams drawn from the document's numbers as editable shapes. The ONLY
-third-party mark is the OpenCode wordmark (slide 8), used because its official brand page publishes the file and rules
-(docs/ASSET-RIGHTS.md); it is fetched by scripts/brand_assets.py, SHA256-checked, and skipped if absent. All other
-platforms stay text-only: their terms do not permit use without approval, or could not be read.
+snapshot date. Visuals are charts and diagrams drawn from the document's numbers as editable shapes. Only two
+third-party marks are used: the OpenCode wordmark (slide 8, GUIDELINE-PERMITTED) and the Cursor lockup (slide 7,
+NOMINATIVE-USE-ASSESSMENT); statuses in docs/ASSET-RIGHTS.md. They are fetched by scripts/brand_assets.py, SHA256-checked,
+and skipped if absent. All other platforms stay text-only (approval needed, or the official file/terms were not obtainable).
 
 Transitions (one continuous world, scripts/pptx_world.py): zoom-through -> pull-back reveal triples with pans between.
 STATUS: SPIKE/PREVIEW. Layers A and B only; PowerPoint playback and video export are NOT RUN.
@@ -35,7 +35,9 @@ from pptx_world import EMU, H, W, World  # noqa: E402
 
 HOLD_MS, MORPH_MS = 8000, 1500
 OPENCODE_MARK = "opencode-wordmark-light.png"
+CURSOR_MARK = "cursor-lockup-horizontal-2d-light.png"
 BRAND = {"dir": None}  # set by build(); the mark is used only if present and matching its pinned SHA256
+CURSOR_CREDIT = "Cursor 標誌取自官方品牌頁 cursor.com/brand；商標屬 Anysphere, Inc.，本簡報與其無關聯、非其背書。"
 OPENCODE_CREDIT = "OpenCode 標誌取自官方品牌頁 opencode.ai/brand；商標屬 Anomaly，本簡報與其無關聯、非其背書。"
 N = 20
 FOOTER = f"資料快照 {D.SNAPSHOT}（{D.VERSION}）· 取自提供文件，未重新核對"
@@ -161,12 +163,16 @@ def p05():
     return draw
 
 
-def opencode_mark():
-    """Path of the verified OpenCode wordmark, or None (deck then shows text only)."""
+def brand_mark(name):
+    """Path of a verified vendor mark, or None (the deck then shows text only)."""
     if not BRAND["dir"]:
         return None
-    path = Path(BRAND["dir"]) / OPENCODE_MARK
-    return path if brand_assets.verify(path, brand_assets.ASSETS[OPENCODE_MARK]["sha256"]) else None
+    path = Path(BRAND["dir"]) / name
+    return path if brand_assets.verify(path, brand_assets.ASSETS[name]["sha256"]) else None
+
+
+def opencode_mark():
+    return brand_mark(OPENCODE_MARK)
 
 
 def two_cards(c, left, right, tag_l, tag_r, kicker, mark=None):
@@ -213,6 +219,10 @@ def p07():
                  ("", "第三方模型：Plus 不支援；Premium 起另購預付 credit，按 API list price"),
                  ("", "舊制 Pro／Pro+／Ultra：兩個月池（Cursor Models／Other Models）；切換新制可選但永久")]
         T(c, "cnotes", para_list(items), 5.6, 4.35, 7.0, 2.4, 15, SUB, after=6)
+        mark = brand_mark(CURSOR_MARK)
+        if mark:  # lockup alone, unaltered, right of the headline; credit sits in the free band under the notes
+            c.picture("brand_cursor", mark, 9.9, 1.0, 2.7, 0.64, align="right")
+            T(c, "brand_credit", CURSOR_CREDIT, 5.6, 6.2, 7.0, 0.5, 14, MUTED)
     return draw
 
 
@@ -522,6 +532,7 @@ def build(output, hold=HOLD_MS, duration=MORPH_MS, fonts=None, brand_dir=None):
     def notes(j):
         return (f"{TALK[j]}\n\n來源碼（對應使用者文件 {D.VERSION} 的原始來源索引）：{SRC[j][0]}\n"
                 f"資料快照 {D.SNAPSHOT}；價格與額度可能已變動，發布前需重新核對。數字取自使用者提供的文件，未獨立查證。"
+                + ("\n" + CURSOR_CREDIT + "（官方品牌頁，存取日 2026-11-07；依指認性使用評估，非個別授權。）" if j == 6 and brand_mark(CURSOR_MARK) else "")
                 + ("\n" + OPENCODE_CREDIT + "（Logo 使用規則：官方品牌頁，存取日 2026-11-07。）" if j == 7 and opencode_mark() else "")
                 + "\nPowerPoint 原生 Morph 實播狀態：NOT RUN。")
 
