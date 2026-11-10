@@ -241,7 +241,7 @@ class World:
                 out.append(p)
         return sorted(out, key=lambda p: p.rank)
 
-    def build(self, prs, hud=None, notes=None):
+    def build(self, prs, hud=None, notes=None, hud_readable=True):
         """Create one slide per panel. Returns {slide_number: [readable text names]} for the validator."""
         readable = {}
         for j in range(len(self.panels)):
@@ -255,7 +255,8 @@ class World:
                 cx, cy, z = self.view(j)  # HUD lives in slide coordinates: panel scale 1/z cancels the camera zoom
                 ctx.p = Panel(99, cx - W / 2 / z, cy - H / 2 / z, 1.0 / z, None, "hud")
                 hud(ctx, j)
-                names += ctx.texts.get(99, [])
+                if hud_readable:
+                    names += ctx.texts.get(99, [])
             if notes:
                 sl.notes_slide.notes_text_frame.text = notes(j)
             readable[str(j + 1)] = names
