@@ -39,11 +39,12 @@ def rgb(h):
 
 
 class Panel:
-    def __init__(self, idx, ox, oy, s, draw, kind, target=False, rank=None, name_idx=None, replaces=None):
+    def __init__(self, idx, ox, oy, s, draw, kind, target=False, rank=None, name_idx=None, replaces=None, dur=None):
         self.idx, self.ox, self.oy, self.s, self.draw, self.kind, self.target = idx, ox, oy, s, draw, kind, target
         self.rank = idx if rank is None else rank
         self.name_idx = idx if name_idx is None else name_idx  # a revisited panel keeps its original object names
         self.replaces = replaces  # index of the panel this one is a redraw of (that one is no longer drawn from here on)
+        self.dur = dur  # Morph duration (ms) of the transition INTO this panel's slide; None = the deck default
 
     @property
     def rect(self):
@@ -104,17 +105,21 @@ class Ctx:
         return shp
 
     # ---- primitives -----------------------------------------------------------------------------------------
-    def rect(self, name, lx, ly, lw, lh, fill=None, alpha=None, grad=None, line=None, kind=MSO_SHAPE.RECTANGLE, round_=None):
+    def rect(self, name, lx, ly, lw, lh, fill=None, alpha=None, grad=None, line=None, kind=MSO_SHAPE.RECTANGLE, round_=None,
+             rot=0):
+        """`rot`: degrees clockwise about the shape's centre (the box is placed unrotated at lx, ly, then turned)."""
         x, y = self.pt(lx, ly)
         w, h = lw * self.k, lh * self.k
         self._track(self._name(name), w, h)
         shp = self.sl.shapes.add_shape(kind, self._emu(x), self._emu(y), self._emu(w), self._emu(h))
         if round_ is not None:
             shp.adjustments[0] = round_
+        if rot:
+            shp.rotation = rot % 360
         return self._finish(shp, name, fill, alpha, grad, line)
 
-    def oval(self, name, cx, cy, r, fill, alpha=None, line=None):
-        return self.rect(name, cx - r, cy - r, 2 * r, 2 * r, fill, alpha, line=line, kind=MSO_SHAPE.OVAL)
+    def oval(self, name, cx, cy, r, fill, alpha=None, line=None, rot=0):
+        return self.rect(name, cx - r, cy - r, 2 * r, 2 * r, fill, alpha, line=line, kind=MSO_SHAPE.OVAL, rot=rot)
 
     def poly(self, name, pts, fill, alpha=None, line=None):
         e = [(int(round(x * EMU)), int(round(y * EMU))) for x, y in (self.pt(*q) for q in pts)]
@@ -132,7 +137,7 @@ class Ctx:
         return self.rect(name, lx, ly, lw, lh, fill, line=(border, .75),
                          kind=MSO_SHAPE.ROUNDED_RECTANGLE if round_ else MSO_SHAPE.RECTANGLE, round_=round_)
 
-    def picture(self, name, path, lx, ly, lw, lh, align="center"):
+    def picture(self, name, path, lx, ly, lw, lh, align="center", rot=0):
         """Place an image inside the box, scaled to fit (never cropped or stretched)."""
         iw, ih = Image.open(path).size
         scale = min(lw / iw, lh / ih)
@@ -143,16 +148,20 @@ class Ctx:
         self._track(self._name(name), w * self.k, h * self.k)
         pic = self.sl.shapes.add_picture(str(path), self._emu(x), self._emu(y), self._emu(w * self.k), self._emu(h * self.k))
         pic.name = self._name(name)
+        if rot:
+            pic.rotation = rot % 360
         return pic
 
     def text(self, name, paras, lx, ly, lw, lh, pt, color, face, ea, bold=False, align=PP_ALIGN.LEFT,
-             anchor=MSO_ANCHOR.TOP, after=0.0, spacing=1.0, track=True):
+             anchor=MSO_ANCHOR.TOP, after=0.0, spacing=1.0, track=True, rot=0):
         """paras: str | [str | [(text, {bold,color,pt,face}), ...]]. Sizes are in design points of the panel."""
         x, y = self.pt(lx, ly)
         w, h = lw * self.k, lh * self.k
         self._track(self._name(name), w, h)
         box = self.sl.shapes.add_textbox(self._emu(x), self._emu(y), self._emu(w), self._emu(h))
         box.name = self._name(name)
+        if rot:
+            box.rotation = rot % 360
         tf = box.text_frame
         tf.word_wrap = True
         tf.auto_size = MSO_AUTO_SIZE.NONE
@@ -212,8 +221,13 @@ class World:
             panel = Panel(n, prev.ox - fx * s, prev.oy - fy * s, s, draw, kind, target=True, rank=prev.rank - 0.5)
         else:
             raise ValueError(kind)
+        panel.dur = kw.get("dur")
         self.panels.append(panel)
         return panel
+
+    def durations(self, default):
+        """One Morph duration (ms) per slide for pptx_morph_patch.apply (the first slide's value is unused)."""
+        return [p.dur or default for p in self.panels]
 
     def view(self, i):
         p = self.panels[i]
@@ -241,7 +255,7 @@ class World:
                 out.append(p)
         return sorted(out, key=lambda p: p.rank)
 
-    def build(self, prs, hud=None, notes=None):
+    def build(self, prs, hud=None, notes=None, hud_readable=True):
         """Create one slide per panel. Returns {slide_number: [readable text names]} for the validator."""
         readable = {}
         for j in range(len(self.panels)):
@@ -255,7 +269,8 @@ class World:
                 cx, cy, z = self.view(j)  # HUD lives in slide coordinates: panel scale 1/z cancels the camera zoom
                 ctx.p = Panel(99, cx - W / 2 / z, cy - H / 2 / z, 1.0 / z, None, "hud")
                 hud(ctx, j)
-                names += ctx.texts.get(99, [])
+                if hud_readable:
+                    names += ctx.texts.get(99, [])
             if notes:
                 sl.notes_slide.notes_text_frame.text = notes(j)
             readable[str(j + 1)] = names

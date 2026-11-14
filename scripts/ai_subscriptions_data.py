@@ -69,3 +69,10 @@ LADDER = [
     ("Kimi", "CNY", [("Go", 49), ("Plus", 99), ("Pro", 199), ("Max", 699), ("Ultra", 1399)]),
 ]
 CURSOR_MULTIPLIERS = [("Plus", 8, 1), ("Premium", 30, 4), ("Super", 100, 15), ("Ultra", 200, 50)]
+
+# ---- Added 2026-11-10 for the YouTube deck: values from the user's verified storyboard v2.1 (official pages, 2026-11-10) ----
+CHECK_DATE = "2026-11-10"
+CLAUDE_TIERS = [("Pro", 20, "含 Claude Code"), ("Max", 100, "約 Pro 的 5 倍"), ("Ultra", 200, "每週約 Pro 的 10 倍")]
+KIMI_TIERS_CNY = {"Go": 49, "Plus": 99}  # Go has no Kimi Code; Plus includes it (mainland-China CNY prices)
+SEARCH_FETCH_PER_1000_USD = 0.75  # DeepSeek Search / Fetch, per 1,000 successful requests, on top of token cost
+OPENCODE_EXAMPLE = (1, 15)  # US$1 spent on a model whose monthly reference is US$15 -> 6.67 % of the monthly pool
