@@ -45,7 +45,8 @@ def insert_transition(xml, fragment):
     raise RuntimeError("Cannot place transition: no p:sld end tag")
 
 
-def apply(src: Path, dest: Path, duration: int, hold: int, dedupe: bool = True):
+def apply(src: Path, dest: Path, duration, hold, dedupe: bool = True):
+    """`duration` (Morph ms) and `hold` (auto-advance ms): each one int for every slide, or a list with one value per slide."""
     with ZipFile(src) as zin:
         parts = {name: zin.read(name) for name in zin.namelist()}
     slides = sorted(
@@ -54,6 +55,10 @@ def apply(src: Path, dest: Path, duration: int, hold: int, dedupe: bool = True):
     )
     if len(slides) < 2:
         raise RuntimeError("Need at least two slides")
+    if isinstance(hold, (list, tuple)) and len(hold) != len(slides):
+        raise RuntimeError(f"{len(hold)} hold values for {len(slides)} slides")
+    if isinstance(duration, (list, tuple)) and len(duration) != len(slides):
+        raise RuntimeError(f"{len(duration)} duration values for {len(slides)} slides")
     seen_matched = defaultdict(set)
     for i, path in enumerate(slides):
         xml = parts[path].decode("utf-8")
@@ -71,7 +76,9 @@ def apply(src: Path, dest: Path, duration: int, hold: int, dedupe: bool = True):
             seen_matched[i].add(key)
             return re.sub(r'\bname="[^"]*"', f'name="{key}"', tag)
         xml = re.sub(r"<p:cNvPr\b[^>]*>", rename, xml)
-        xml = insert_transition(xml, transition(duration, hold, first=(i == 0)))
+        slide_hold = hold[i] if isinstance(hold, (list, tuple)) else hold
+        slide_dur = duration[i] if isinstance(duration, (list, tuple)) else duration
+        xml = insert_transition(xml, transition(slide_dur, slide_hold, first=(i == 0)))
         etree.fromstring(xml.encode("utf-8"))
         parts[path] = xml.encode("utf-8")
     duplicate_count = 0
