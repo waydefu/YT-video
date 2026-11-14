@@ -6,6 +6,9 @@ on:
       - 'scripts/build_ai_subscriptions_deck.py'
       - 'scripts/deck_kit.py'
       - 'scripts/brand_assets.py'
+      - 'scripts/deck_motion.py'
+      - 'scripts/build_motion_kit_demo.py'
+      - 'tests/test_motion_kit.py'
       - 'scripts/build_ai_subscriptions_youtube.py'
       - 'scripts/ai_subscriptions_script.py'
       - 'tests/test_ai_subscriptions_youtube.py'
@@ -44,6 +47,12 @@ jobs:
           python scripts/build_ai_subscriptions_youtube.py --output build/ai-subscriptions/youtube/ai-subscriptions-youtube.pptx
           python scripts/pptx_validate.py build/ai-subscriptions/youtube/ai-subscriptions-youtube.pptx --min-loops 0 --strict \
             --min-font 30 --readable build/ai-subscriptions/youtube/ai-subscriptions-youtube.readable.json
+      - name: Build and validate the motion-kit demo (layer A only)
+        run: |
+          python scripts/build_motion_kit_demo.py --output build/motion-kit/motion-kit-demo.pptx
+          python scripts/pptx_validate.py build/motion-kit/motion-kit-demo.pptx --min-loops 0 --strict \
+            --readable build/motion-kit/motion-kit-demo.readable.json
+          python scripts/pptx_morph_proxy.py build/motion-kit/motion-kit-demo.pptx build/motion-kit/proxy.pptx --steps 3
       - name: Validate structure (layer A only; not PowerPoint playback)
         run: |
           python scripts/pptx_validate.py build/ai-subscriptions/ai-subscriptions-deck.pptx --min-loops 0 --strict \

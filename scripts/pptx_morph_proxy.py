@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Layer-B PROXY of a Morph transition: render in-between frames from geometry. NOT a playback test.
 
-Morph matches objects by name and interpolates position and size (and font size for text) between the
+Morph matches objects by name and interpolates position, size, rotation (and font size for text) between the
 two slides, fading unmatched objects. This script reproduces only that geometry in plain slides so the
 middle of a transition can be inspected with any renderer (e.g. LibreOffice) for gaps, flashes, objects
 passing through text, or zoom ratios that would feel like a jump. Real PowerPoint easing, text handling
@@ -96,6 +96,12 @@ def frame(prs, src, dst, t, label):
         moved.top = Emu(int(lerp(other.top, shp.top, e)))
         moved.width = Emu(int(lerp(other.width, shp.width, e)))
         moved.height = Emu(int(lerp(other.height, shp.height, e)))
+        try:  # rotation: shortest way round (PowerPoint's exact rule is not documented; this is an assumption)
+            ra, rb = other.rotation % 360, shp.rotation % 360
+            delta = (rb - ra + 180) % 360 - 180
+            moved.rotation = (ra + delta * e) % 360
+        except (AttributeError, ValueError):
+            pass
         a_runs = list(other._element.iter(qn("a:rPr")))
         b_runs = list(el.iter(qn("a:rPr")))
         if len(a_runs) == len(b_runs):
