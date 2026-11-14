@@ -19,7 +19,7 @@ from pathlib import Path
 
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE
-from pptx.enum.text import PP_ALIGN
+from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Emu
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -56,7 +56,7 @@ def rows_page(c, headline, rows, hl=None, label_w=3.4, top=1.95, pitch=None, tin
     n = len(rows)
     pitch = pitch or (1.5 if n <= 3 else 1.15)
     if hl is not None:
-        c.rect("hl", x0 - 0.2, top + hl * pitch - 0.12, x1 - x0 + 0.4, pitch - 0.04, HL_FILL, line=(COPPER, 2.5),
+        c.rect("hl", x0 - 0.2, top + hl * pitch, x1 - x0 + 0.4, pitch - 0.1, HL_FILL, line=(COPPER, 2.5),
                kind=MSO_SHAPE.ROUNDED_RECTANGLE, round_=0.12)
     dx = x0 + label_w + 0.2
     for i, row in enumerate(rows):
@@ -64,8 +64,9 @@ def rows_page(c, headline, rows, hl=None, label_w=3.4, top=1.95, pitch=None, tin
         dcolor = row[3] if len(row) > 3 else INK
         dim = hl is not None and i != hl and dcolor == INK
         y = top + i * pitch
-        T(c, f"rl{i}", label, x0, y, label_w, 0.6, 34, MUTED if dim else color, bold=True)
-        T(c, f"rd{i}", detail, dx, y + 0.02, x1 - dx, pitch - 0.12, MIN_PT, MUTED if dim else dcolor)
+        # both texts share the row's box and are centred in it, so label and detail sit on one line and inside the highlight
+        T(c, f"rl{i}", label, x0, y, label_w, pitch - 0.1, 34, MUTED if dim else color, bold=True, anchor=MSO_ANCHOR.MIDDLE)
+        T(c, f"rd{i}", detail, dx, y, x1 - dx, pitch - 0.1, MIN_PT, MUTED if dim else dcolor, anchor=MSO_ANCHOR.MIDDLE)
 
 
 def series(headline, rows_by_step, **kw):

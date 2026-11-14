@@ -55,6 +55,21 @@ class Deck(unittest.TestCase):
         self.assertEqual(keys.index("menu"), 2)  # after the two hook slides
         self.assertIsNone(slides[0][3])
 
+    def test_transitions_are_varied_and_cards_keep_their_names(self):
+        slides = A.deck(A.Art(ASSETS))
+        kinds = {k for *_, k in slides if k}
+        self.assertTrue({"pan_right", "pan_down", "stay"} <= kinds)  # camera zig-zags between chapters, redraws inside them
+        entries = [k for key, scene, _, k in slides if k and k != "stay"]
+        self.assertGreaterEqual(entries.count("pan_down"), 5)
+        for key in ("sheets0", "sheets1", "inst0", "inst1"):  # shuffled / unfolded objects exist on both slides
+            self.assertIn(key, [k for k, *_ in slides])
+
+    def test_rows_are_centred_in_their_cells(self):
+        import inspect
+        src = inspect.getsource(A.stack_rows)
+        self.assertIn("MSO_ANCHOR.MIDDLE", src)
+        self.assertIn("MSO_ANCHOR.MIDDLE", inspect.getsource(A.Y.rows_page))
+
 
 if __name__ == "__main__":
     unittest.main()
