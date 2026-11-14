@@ -333,9 +333,16 @@ def deck():
     return out
 
 
-def holds_ms(slides):
+def slot_ms(slides):
+    """Time each slide should occupy in the finished video: the scene's narration seconds shared by its slides."""
     count = Counter(scene for _, scene, *_ in slides)
-    return [int(S.SCENE_SECONDS[scene] * 1000 / count[scene]) for _, scene, *_ in slides]
+    return [S.SCENE_SECONDS[scene] * 1000 / count[scene] for _, scene, *_ in slides]
+
+
+def holds_ms(slides):
+    """Auto-advance time (`advTm`). Observed in a user's phone recording of a demo deck (2026-11-14): the Morph time is
+    ADDED to the hold, so a slide's slot is (transition into it) + hold; subtract the transition from the slot."""
+    return [int(slot - (MORPH_MS if j else 0)) for j, slot in enumerate(slot_ms(slides))]
 
 
 def build(output, fonts=None):
@@ -369,7 +376,7 @@ def build(output, fonts=None):
     def notes(j):
         key, scene = slides[j][0], slides[j][1]
         head = f"[{key}] " + (S.NARRATION[scene] if first_of_scene[scene] == j else "（同一段旁白，延續上一頁）")
-        return (f"{head}\n\n本頁約 {holds_ms(slides)[j] / 1000:g} 秒（旁白秒數平均分配到該段頁數）。\n"
+        return (f"{head}\n\n本頁約 {slot_ms(slides)[j] / 1000:g} 秒（旁白秒數平均分配到該段頁數；其中轉場 {MORPH_MS / 1000:g} 秒，停留 {holds_ms(slides)[j] / 1000:g} 秒）。\n"
                 f"資料：使用者的分鏡 v2.1（官方頁面，查核 {D.CHECK_DATE}），本 repo 未獨立查證。"
                 "\nPowerPoint 原生 Morph 實播狀態：NOT RUN。")
 
@@ -394,7 +401,7 @@ def main():
     args.output.parent.mkdir(parents=True, exist_ok=True)
     world, slides = build(args.output, (args.font_sans, args.font_serif, args.font_mono))
     print(f"{args.output}: {len(slides)} slides, {len(slides) - 1} native Morph transitions "
-          f"({sum(holds_ms(slides)) / 1000:g} s of holds; SPIKE; PowerPoint playback NOT RUN)")
+          f"(~{(sum(holds_ms(slides)) + (len(slides) - 1) * MORPH_MS) / 1000:g} s of video; SPIKE; PowerPoint playback NOT RUN)")
     print("zoom ratios:", sorted({round(z, 2) for _, _, _, z in world.describe()}))
 
 

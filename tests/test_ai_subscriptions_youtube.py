@@ -42,8 +42,10 @@ class Deck(unittest.TestCase):
         scenes = {scene for _, scene, *_ in slides}
         self.assertEqual(scenes, set(S.SCENE_SECONDS))
         holds = Y.holds_ms(slides)
-        self.assertAlmostEqual(sum(holds) / 1000, S.TOTAL_SECONDS, delta=1.0)
-        self.assertTrue(all(h >= 5000 for h in holds))  # never a flash
+        # observed on a phone: the Morph time is added to the hold, so holds + transitions = the narration length
+        total = sum(holds) / 1000 + (len(slides) - 1) * Y.MORPH_MS / 1000
+        self.assertAlmostEqual(total, S.TOTAL_SECONDS, delta=1.0)
+        self.assertTrue(all(h >= 4000 for h in holds))  # never a flash
 
     def test_keys_unique_and_first_slide_has_no_transition(self):
         slides = Y.deck()
