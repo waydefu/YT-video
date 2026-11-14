@@ -18,7 +18,7 @@ from pathlib import Path
 
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE
-from pptx.enum.text import PP_ALIGN
+from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Emu
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -53,46 +53,54 @@ def page(c, headline, x0=X0, x1=X1, tint=K.CARD):
     Y.page(c, headline, tint, x0, x1)
 
 
-def stack_rows(c, headline, rows, hl=None, x0=X0, x1=7.5, top=1.8, pitch=1.55, tint=K.CARD):
-    """Rows of (label, colour, detail) as a label line over a detail line; same names on every slide of a series."""
+ROW_TOP, ROW_PITCH = 1.8, 1.5  # the grid every row series and picture box is aligned to
+
+
+def stack_rows(c, headline, rows, hl=None, x0=X0, x1=7.5, top=ROW_TOP, pitch=ROW_PITCH, tint=K.CARD):
+    """Rows of (label, colour, detail): one two-line text per row, centred in its cell, so the highlight box, the label and
+    the detail always share the same centre line. Same names on every slide of a series."""
     page(c, headline, X0, X1, tint)
     if hl is not None:
-        c.rect("hl", x0 - 0.2, top + hl * pitch - 0.1, x1 - x0 + 0.4, pitch - 0.06, Y.HL_FILL, line=(COPPER, 2.5),
+        c.rect("hl", x0 - 0.2, top + hl * pitch, x1 - x0 + 0.4, pitch - 0.1, Y.HL_FILL, line=(COPPER, 2.5),
                kind=MSO_SHAPE.ROUNDED_RECTANGLE, round_=0.12)
     for i, (label, color, detail) in enumerate(rows):
         dim = hl is not None and i != hl
-        y = top + i * pitch
-        T(c, f"rl{i}", label, x0, y, x1 - x0, 0.6, 34, MUTED if dim else color, bold=True)
-        T(c, f"rd{i}", detail, x0, y + 0.58, x1 - x0, 0.9, MIN_PT, MUTED if dim else INK)
+        T(c, f"rt{i}", [[(label, {"pt": 34, "bold": True, "color": MUTED if dim else color})],
+                        [(detail, {"pt": MIN_PT, "bold": False, "color": MUTED if dim else INK})]],
+          x0, top + i * pitch, x1 - x0, pitch - 0.1, MIN_PT, INK, anchor=MSO_ANCHOR.MIDDLE)
 
 
-def with_picture(art, name, box):
-    def deco(c):
-        c.picture(f"pic_{name}", art(name), *box)
-    return deco
+# right-hand picture zone, aligned to the row grid: one big card on top, the others as tilted thumbnails underneath
+BIG = (7.9, ROW_TOP, 4.7, 3.0)
+THUMBS = [(7.9, 5.0, 2.2, 1.3, -4.0), (10.4, 5.0, 2.2, 1.3, 4.0)]
 
 
-PIC = (7.9, 1.6, 4.7, 5.0)  # right-hand picture box (landscape slide, rail on the left)
-
-
-def both(first, second):
-    def draw(c):
-        first(c)
-        second(c)
-    return draw
+def pic_deck(c, art, names, active):
+    """All pictures of a series on every slide under fixed names; the active one is the big card, the rest wait as
+    thumbnails. Next slide they swap places, so Morph shuffles the cards (move, resize, rotate) instead of cross-fading."""
+    others = [i for i in range(len(names)) if i != active]
+    for i, name in enumerate(names):
+        if i == active:
+            c.picture(f"pic_{name}", art(name), *BIG)
+        else:
+            x, y, w, h, rot = THUMBS[others.index(i)]
+            c.picture(f"pic_{name}", art(name), x, y, w, h, rot=rot)
 
 
 def series_rows(headline, rows, steps, **kw):
-    return [(lambda c, h=h: Y.rows_page(c, headline, rows, h, x0=X0, x1=X1, **kw)) for h in steps]
+    return [(lambda c, h=h: Y.rows_page(c, headline, rows, h, x0=X0, x1=X1, top=ROW_TOP, pitch=1.15 if len(rows) > 3 else ROW_PITCH,
+                                        **kw)) for h in steps]
 
 
-def series_stack(headline, rows, steps, art=None, pics=None, box=PIC, **kw):
+def series_stack(headline, rows, steps, art=None, pics=None, **kw):
     out = []
     for i, h in enumerate(steps):
-        def draw(c, h=h, i=i):
+        def draw(c, h=h):
             stack_rows(c, headline, rows, h, **kw)
-            if pics:
-                c.picture(f"pic_{pics[i]}", art(pics[i]), *box)
+            if pics and len(pics) == 1:
+                c.picture(f"pic_{pics[0]}", art(pics[0]), *BIG)
+            elif pics:
+                pic_deck(c, art, pics, h)
         out.append(draw)
     return out
 
@@ -100,11 +108,13 @@ def series_stack(headline, rows, steps, art=None, pics=None, box=PIC, **kw):
 def hook(art, stage):
     def draw(c):
         Y.page(c, "讓 AI 畫一張會拆開的圖", K.CARD, 1.0, 12.3)
+        # a pulse behind the engine: three rings that fan out when it comes apart
+        M.draw_ripple(c, "rp", 9.8, 4.1, M.ripple_radii(3, 1.0 if stage else 0.3, 2.6), COPPER, base_alpha=0.1)
         c.picture("pic_hook_" + ("apart" if stage else "firing"), art("fig_raptor_apart" if stage else "fig_raptor_firing"),
                   6.9, 1.6, 5.8, 5.0)
-        T(c, "hk_a", "官方 Raptor 2 範例", 1.0, 2.3, 5.6, 0.7, 34, SUB, bold=True)
-        T(c, "hk_b", "拆成 11 組總成" if stage else "完整狀態", 1.0, 3.3, 5.6, 0.9, 40, COPPER, bold=True)
-        T(c, "hk_c", "官方靜態圖前後對照" if stage else "開源專案提供的範例", 1.0, 4.5, 5.6, 0.9, MIN_PT, INK)
+        T(c, "hk_a", "Raptor 2 火箭引擎", 1.0, 2.3, 5.6, 0.7, 34, SUB, bold=True)
+        T(c, "hk_b", "拆成 11 組" if stage else "裝好的樣子", 1.0, 3.3, 5.6, 0.9, 40, COPPER, bold=True)
+        T(c, "hk_c", "滑鼠移上去就會拆" if stage else "官方範例，不是我們做的", 1.0, 4.5, 5.6, 0.9, MIN_PT, INK)
     return draw
 
 
@@ -112,41 +122,64 @@ def menu_page(c):
     Y.page(c, "八個章節", WALL, 1.0, 12.3)
 
 
-def sheets(art):
+SHEET_NAMES = [("sheet_poster", "海報"), ("sheet_drawing", "技術圖"), ("sheet_detailed", "詳解頁")]
+
+
+def sheets(art, fan):
+    """Three A4 sheets: side by side with captions, then dealt into a tilted, overlapping fan (same objects, Morph moves them)."""
     def draw(c):
-        page(c, "另可要求 A4 列印版")
-        for i, (name, label) in enumerate([("sheet_poster", "海報"), ("sheet_drawing", "技術圖"), ("sheet_detailed", "詳解頁")]):
-            x = X0 + i * 3.3
-            c.picture(f"pic_{name}", art(name), x, 1.75, 3.0, 4.0)
-            T(c, f"sh{i}", label, x, 5.85, 3.0, 0.55, MIN_PT, INK, bold=True, align=PP_ALIGN.CENTER)
-        T(c, "sh_note", "亮色與暗色主題都有", X0, 6.4, 9.7, 0.5, MIN_PT, SUB)
+        page(c, "想印出來，另外說一聲")
+        for i, (name, label) in enumerate(SHEET_NAMES):
+            if fan:
+                box, rot = (X0 + 3.15 + (i - 1) * 2.0, 1.7, 3.4, 4.2), (i - 1) * 9.0
+                cap_x = X0 + 3.15 + (i - 1) * 2.0 - 0.1
+            else:
+                box, rot = (X0 + i * 3.3, 1.7, 3.0, 4.0), 0.0
+                cap_x = X0 + i * 3.3
+            c.picture(f"pic_{name}", art(name), *box, rot=rot)
+            T(c, f"sh{i}", label, cap_x + (0.0 if fan else 0.0), 5.9, 3.0 if not fan else 3.4, 0.5, MIN_PT, INK, bold=True,
+              align=PP_ALIGN.CENTER)
+        T(c, "sh_note", "亮色、暗色主題都有" if fan else "不會每次自動附贈", X0, 6.5, 9.7, 0.5, MIN_PT, SUB)
     return draw
 
 
 def raptor(art, stage):
     def draw(c):
-        rows = [("11 組總成", COPPER, "懸停即拆開"), ("幾何稽核", COPPER, "僅針對此範例")]
+        rows = [("11 組零件", COPPER, "滑鼠移上去就拆開"), ("幾何稽核", COPPER, "只驗過這一個範例")]
         stack_rows(c, "Raptor 2 官方範例", rows, None if stage == 0 else 1, x1=7.0)
-        box = (7.6, 1.5, 4.9, 5.3) if stage == 0 else (7.0, -0.2, 7.0, 8.2)  # the same poster, enlarged to its part numbers
+        # the same poster, small then enlarged to read the part numbers (kept inside the HUD and edge-safe zones)
+        box = (9.0, 2.0, 3.6, 4.2) if stage == 0 else (7.2, 0.95, 5.4, 6.3)
         c.picture("pic_poster", art("poster_raptor_figure"), *box)
     return draw
+
+
+TOOLS = ["claude-code", "antigravity", "opencode", "codex", "minimax-code"]
+CHIP_POS = [(X0, 3.95, 3.0), (X0 + 3.25, 3.95, 3.0), (X0 + 6.5, 3.95, 3.2), (X0, 4.95, 2.4), (X0 + 2.65, 4.95, 3.8)]  # x, y, w
 
 
 def install(stage):
     def draw(c):
         if stage < 2:
             page(c, "安裝")
+            # the tool names live behind the command box and slide out of it on the second slide
+            for i, (name, (x, y, w)) in enumerate(zip(TOOLS, CHIP_POS)):
+                out = stage == 1
+                cx, cy, cw, ch = (x, y, w, 0.75) if out else (x, 2.45, w, 0.75)  # folded: same size, hidden inside the command box
+                c.rect(f"chip{i}", cx, cy, cw, ch, "FBEBDD", line=(COPPER, 1.5), kind=MSO_SHAPE.ROUNDED_RECTANGLE, round_=0.3)
+                T(c, f"chip_t{i}", name, cx, cy + (ch - 0.5) / 2, cw, 0.5, MIN_PT, INK, face="mono", bold=True, align=PP_ALIGN.CENTER,
+                  track=out)
             c.rect("cmd", X0, 1.9, 9.7, 1.6, MONO_BG, kind=MSO_SHAPE.ROUNDED_RECTANGLE, round_=0.08)
-            T(c, "cmd_t", ["$ npx skills add", "  wheresryan22/anatomy -g"], X0 + 0.3, 2.15, 9.2, 1.2, MIN_PT, WHITE, face="mono")
-            T(c, "cmd_cap", "官方一行安裝" if stage == 0 else ["加 -a 指定工具：claude-code、antigravity、", "opencode、codex、minimax-code"],
-              X0, 3.9, 9.7, 1.6, MIN_PT, SUB if stage == 0 else INK)
+            T(c, "cmd_t", ["$ npx skills add", "  wheresryan22/anatomy -g"], X0 + 0.3, 1.9, 9.2, 1.6, MIN_PT, WHITE, face="mono",
+              anchor=MSO_ANCHOR.MIDDLE)
+            T(c, "cmd_cap", "官方的一行安裝指令" if stage == 0 else "再加 -a，指定要裝給哪個工具",
+              X0, 3.95 if stage == 0 else 5.95, 9.7, 0.6, MIN_PT, SUB if stage == 0 else INK)
         elif stage == 2:
-            rows = [("Node.js 20.10+", COPPER, "Anatomy 本身最低需求"), ("不需 npm install", COPPER, "只用 Node 內建模組"),
-                    ("不需工具專用金鑰", COPPER, "Agent 帳號另算")]
+            rows = [("Node 20.10 以上", COPPER, "Anatomy 本身的要求"), ("不用 npm install", COPPER, "只用 Node 內建模組"),
+                    ("不用另申請金鑰", COPPER, "AI Agent 的帳號要自己備")]
             stack_rows(c, "安裝", rows, None, x1=X1)
         else:
-            rows = [("skills CLI 1.7.1", COPPER, "要求 Node 22.20 以上"), ("Chrome／Chromium", COPPER, "自動檢查用"),
-                    ("React 18+", COPPER, "僅 React 輸出需要")]
+            rows = [("skills CLI 1.7.1", COPPER, "它要 Node 22.20 以上"), ("Chrome", COPPER, "自動檢查要用到"),
+                    ("React 18 以上", COPPER, "只有輸出 React 才需要")]
             stack_rows(c, "安裝", rows, None, x1=X1)
     return draw
 
@@ -156,60 +189,71 @@ def closing(art, stage):
         page(c, "授權與來源")
         T(c, "lic", "MIT © 2026 Ryan", X0, 1.9, 6.0, 0.9, 40, INK, bold=True)
         T(c, "lic_u", ["github.com/", "wheresryan22/anatomy"], X0, 3.0, 6.0, 1.2, MIN_PT, SUB, face="mono")
-        T(c, "lic_n", "第三方科普介紹" if not stage else ["第三方科普介紹，", "與作者無關聯"], X0, 4.6, 6.0, 1.4, 34, COPPER, bold=True)
+        T(c, "lic_n", "第三方科普介紹" if not stage else ["第三方介紹，", "跟作者沒有關係"], X0, 4.6, 6.0, 1.4, 34, COPPER, bold=True)
         c.picture("pic_close", art("fig_raptor_apart"), 9.2, 1.5, 3.4, 5.2)
     return draw
 
 
 # ------------------------------------------------------------------------------------------------ deck order
 def deck(art):
-    """[(key, scene, draw, kind)] in slide order; kind = the transition INTO the slide."""
+    """[(key, scene, draw, kind)] in slide order; kind = the transition INTO the slide.
+    Chapters enter alternately from the right and from below (the camera zig-zags through the world); inside a chapter the
+    same panel is redrawn ('stay') and Morph shuffles cards, slides rows and unfolds options."""
     out = []
+    enter = {}  # scene -> how the camera arrives
 
     def add(scene, key, draw, kind=None):
         out.append((key, scene, draw, kind))
 
+    def entry(scene, i):
+        if i:
+            return "stay"
+        enter[scene] = "pan_down" if len(enter) % 2 else "pan_right"
+        return enter[scene]
+
     add("s01", "hook0", hook(art, 0))
     add("s01", "hook1", hook(art, 1), "stay")
     add("s01", "menu", menu_page, "pan_right")  # ring menu in the HUD
-    s2 = [("Agent 技能", COPPER, "Claude 技能，另可用於 4 個其他工具"), ("發明物件", COPPER, "用一個實體物件解釋概念"),
-          ("例子", COPPER, "快取鍵→彈子鎖；GPU context→龍門繪圖機")]
-    for i, d in enumerate(series_rows("Anatomy 是什麼", s2, (None, 0, 1, 2), label_w=2.9)):
-        add("s02", f"what{i}", d, "pan_right" if i == 0 else "stay")
-    s3 = [("HTML", COPPER, "獨立網頁"), ("單一 SVG", COPPER, "樣式內嵌的一個檔"), ("React", COPPER, "React／Next.js 元件")]
-    for i, d in enumerate(series_rows("輸出形式", s3, (0, 1, 2), label_w=3.4)):
-        add("s03", f"out{i}", d, "pan_right" if i == 0 else "stay")
-    add("s03", "sheets", sheets(art), "pan_right")
-    s4 = [("SVG", COPPER, "核心；等角立體零件"), ("SVG＋WebGL", COPPER, "火焰、水、燈光、蒸氣"), ("3D（beta）", COPPER, "零件真的會轉動")]
+    enter["s01"] = "pan_right"
+    s2 = [("Claude 技能", COPPER, "也能給另外 4 個工具用"), ("先發明物件", COPPER, "再用它講概念"),
+          ("快取鍵", COPPER, "畫成一把彈子鎖"), ("GPU context", COPPER, "畫成龍門繪圖機")]
+    for i, d in enumerate(series_rows("Anatomy 是什麼", s2, (0, 1, 2, 3), label_w=3.7)):
+        add("s02", f"what{i}", d, entry("s02", i))
+    s3 = [("HTML", COPPER, "獨立網頁，直接開"), ("SVG", COPPER, "單一檔，樣式內嵌"), ("React", COPPER, "React／Next.js 元件")]
+    for i, d in enumerate(series_rows("三種輸出", s3, (0, 1, 2), label_w=2.6)):
+        add("s03", f"out{i}", d, entry("s03", i))
+    add("s03", "sheets0", sheets(art, False), "stay")
+    add("s03", "sheets1", sheets(art, True), "stay")
+    s4 = [("SVG", COPPER, "核心，等角立體零件"), ("SVG + WebGL", COPPER, "火焰、水、燈光"), ("3D", COPPER, "還在 beta，零件會轉")]
     for i, d in enumerate(series_stack("三種圖", s4, (0, 1, 2), art, ["cap_dial_indicator", "cap_ripple_tank", "cap_turning_dial"])):
-        add("s04", f"kind{i}", d, "pan_right" if i == 0 else "stay")
-    add("s05", "raptor0", raptor(art, 0), "pan_right")
+        add("s04", f"kind{i}", d, entry("s04", i))
+    add("s05", "raptor0", raptor(art, 0), entry("s05", 0))
     add("s05", "raptor1", raptor(art, 1), "stay")
-    s6 = [("dial-indicator", COPPER, "約 300 行"), ("desk-computer", COPPER, "約 85 個實體"),
-          ("arcade-cabinet", COPPER, "約 240 實體、15 線纜")]
-    for i, d in enumerate(series_stack("官方範例的規模", s6, (0, 1, 2), art, ["cap_dial_indicator", "cap_desk_computer", "cap_arcade_cabinet"])):
-        add("s06", f"ex{i}", d, "pan_right" if i == 0 else "stay")
+    s6 = [("dial-indicator", COPPER, "約 300 行程式"), ("desk-computer", COPPER, "約 85 個實體"),
+          ("arcade-cabinet", COPPER, "約 240 個實體")]
+    for i, d in enumerate(series_stack("官方範例有多大", s6, (0, 1, 2), art, ["cap_dial_indicator", "cap_desk_computer", "cap_arcade_cabinet"])):
+        add("s06", f"ex{i}", d, entry("s06", i))
     for i in range(4):
-        add("s07", f"inst{i}", install(i), "pan_right" if i == 0 else "stay")
-    s8 = [("指令", COPPER, "/anatomy　Codex：$anatomy"), ("習慣一", COPPER, "說概念，給真實數字"),
-          ("習慣二", COPPER, "或說物件與會動的部分"), ("習慣三", COPPER, "指定輸出形式與亮暗")]
-    for i, d in enumerate(series_rows("使用", s8, (0, 1, 2, 3), label_w=2.2)):
-        add("s08", f"use{i}", d, "pan_right" if i == 0 else "stay")
-    s9 = [("科普與教學", COPPER, "把原理講清楚"), ("技術文章", COPPER, "需要說明機構"), ("產品說明", COPPER, "主題有零件、有結構")]
-    for i, d in enumerate(series_stack("適合誰（依官方定位整理）", s9, (0, 1, 2), art, ["cap_desk_computer"] * 3)):
-        add("s09", f"fit{i}", d, "pan_right" if i == 0 else "stay")
-    s10 = [("安裝簡單", GOOD, "一行指令"), ("免額外依賴", GOOD, "Node 內建模組"), ("輸出可編輯", GOOD, "HTML、SVG、React"),
-           ("有稽核流程", GOOD, "仍需自己驗證")]
+        add("s07", f"inst{i}", install(i), entry("s07", i))
+    s8 = [("下指令", COPPER, "/anatomy，Codex 用 $anatomy"), ("先說", COPPER, "要講的概念，加真實數字"),
+          ("再說", COPPER, "哪個零件要動"), ("最後", COPPER, "輸出形式、亮色還是暗色")]
+    for i, d in enumerate(series_rows("怎麼用", s8, (0, 1, 2, 3), label_w=2.0)):
+        add("s08", f"use{i}", d, entry("s08", i))
+    s9 = [("科普影片", COPPER, "要把原理講清楚"), ("技術文章", COPPER, "要說明機構怎麼動"), ("產品說明", COPPER, "東西有零件、有結構")]
+    for i, d in enumerate(series_stack("誰用得到（依官方定位整理）", s9, (0, 1, 2), art, ["cap_desk_computer"])):
+        add("s09", f"fit{i}", d, entry("s09", i))
+    s10 = [("好安裝", GOOD, "一行指令"), ("沒額外依賴", GOOD, "只用 Node 內建模組"), ("檔案能再改", GOOD, "HTML、SVG、React"),
+           ("有檢查流程", GOOD, "但還是要自己驗")]
     for i, d in enumerate(series_rows("優點", s10, (0, 1, 2, 3), label_w=3.3)):
-        add("s10", f"pro{i}", d, "pan_right" if i == 0 else "stay")
-    s11 = [("非圖表庫", BAD, "沒有座標軸與資料圖"), ("刻意較慢", BAD, "一張圖要一段長流程"), ("WebGL 特效", BAD, "缺少時 SVG 仍可讀"),
-           ("3D 仍是 beta", BAD, "官方壓測約 20 FPS")]
-    for i, d in enumerate(series_rows("限制（官方數據，非本片實測）", s11, (0, 1, 2, 3), label_w=3.3)):
-        add("s11", f"con{i}", d, "pan_right" if i == 0 else "stay")
-    s12 = [("統計圖表", BAD, "它不是圖表庫"), ("精確地圖", BAD, "或人物插畫"), ("要立即出圖", BAD, "製作流程偏慢")]
-    for i, d in enumerate(series_rows("不適合誰（依官方限制整理）", s12, (0, 1, 2), label_w=3.3)):
-        add("s12", f"not{i}", d, "pan_right" if i == 0 else "stay")
-    add("s13", "end0", closing(art, 0), "pan_right")
+        add("s10", f"pro{i}", d, entry("s10", i))
+    s11 = [("不是圖表庫", BAD, "沒有座標軸、資料圖"), ("做得慢", BAD, "一張圖要跑一段長流程"), ("特效要 WebGL", BAD, "沒有就只看得到 SVG"),
+           ("3D 還是 beta", BAD, "官方壓測約 20 FPS")]
+    for i, d in enumerate(series_rows("限制（官方數據，不是我們測的）", s11, (0, 1, 2, 3), label_w=3.6)):
+        add("s11", f"con{i}", d, entry("s11", i))
+    s12 = [("統計圖表", BAD, "它不是圖表庫"), ("精確地圖", BAD, "也不畫人物"), ("急著要圖", BAD, "流程偏慢，等不及")]
+    for i, d in enumerate(series_rows("不適合的情況（依官方限制整理）", s12, (0, 1, 2), label_w=3.3)):
+        add("s12", f"not{i}", d, entry("s12", i))
+    add("s13", "end0", closing(art, 0), entry("s13", 0))
     add("s13", "end1", closing(art, 1), "stay")
     return out
 
