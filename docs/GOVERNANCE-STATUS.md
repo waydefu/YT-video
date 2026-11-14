@@ -18,6 +18,7 @@
 | AI 訂閱簡報 YouTube 旁白稿與分鏡 | [`YOUTUBE-SCRIPT-AI-SUBSCRIPTIONS.md`](YOUTUBE-SCRIPT-AI-SUBSCRIPTIONS.md) | RESEARCH／草稿；旁白與分鏡待使用者審核；數字未向供應商核對；尚未改簡報 |
 | AI 訂閱簡報 YouTube 版（約 50 頁） | [`AI-SUBSCRIPTIONS-YOUTUBE.md`](AI-SUBSCRIPTIONS-YOUTUBE.md) | PREVIEW；依使用者分鏡 v2.1（數字由使用者核對，本 repo 未獨立查證）；30 pt 手機優先；實播、匯出影片、手機未驗 |
 | 動態 motif 工具組（旋轉、每頁轉場時長、六種動態） | [`PPTX-MOTION-KIT.md`](PPTX-MOTION-KIT.md) | SPIKE；幾何有測試；示範 16 頁僅靜態與代理幀；PowerPoint 補間旋轉未驗 |
+| Anatomy YouTube 橫式版（43 頁，會變形的章節導覽） | [`ANATOMY-YOUTUBE.md`](ANATOMY-YOUTUBE.md) | PREVIEW；依使用者旁白稿 v2（官方展示版，不宣稱實測）；官方素材 MIT；桌面版放映與匯出影片未驗 |
 | 片頭 **V3 舊分鏡** | [`archive/SHOTLIST-V3-LEGACY.md`](archive/SHOTLIST-V3-LEGACY.md) | 歷史資料，含已取消的石裂／碎石；**禁止當現行規格** |
 
 ## 二、流程與證據分層

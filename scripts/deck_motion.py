@@ -92,14 +92,14 @@ def draw_ripple(c, name, cx, cy, radii, fill, base_alpha=0.22, line=None):
 
 
 def draw_menu(c, name, labels, points, active=None, r_idle=0.42, r_active=0.55, color=K.COPPER, idle_fill="E3DFD2",
-              label_dx=0.75, pt=24):
+              label_dx=0.75, pt=24, label_w=3.2):
     """Round markers with a letter inside and a text label beside them; `points` decides ring or rail."""
     for i, (label, (x, y)) in enumerate(zip(labels, points)):
         on = active == i
         c.oval(f"{name}{i}", x, y, r_active if on else r_idle, color if on else idle_fill)
         T(c, f"{name}k{i}", chr(65 + i), x - 0.4, y - 0.26, 0.8, 0.5, pt, K.WHITE if on else K.MUTED, bold=True,
           align=PP_ALIGN.CENTER)
-        T(c, f"{name}n{i}", label, x + label_dx, y - 0.26, 3.2, 0.5, pt, K.INK if on or active is None else K.MUTED, bold=on)
+        T(c, f"{name}n{i}", label, x + label_dx, y - 0.26, label_w, 0.5, pt, K.INK if on or active is None else K.MUTED, bold=on)
 
 
 def draw_wheel(c, name, labels, layout, color, bg="FBFAF6", w=3.6, h=0.5):

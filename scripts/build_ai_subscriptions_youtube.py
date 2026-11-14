@@ -38,10 +38,10 @@ MORPH_MS = 1500
 
 
 # ------------------------------------------------------------------------------------------------ building blocks
-def page(c, headline, tint=CARD):
+def page(c, headline, tint=CARD, x0=1.0, x1=12.3):
     c.card("card", 0, 0, W, H, tint, shadow=True)
     if headline:
-        T(c, "headline", headline, 1.0, 0.75, 11.3, 0.8, 40, INK, bold=True)
+        T(c, "headline", headline, x0, 0.75, x1 - x0, 0.8, 40, INK, bold=True)
 
 
 def chip(c, name, x, y, w, h, label, color=INK, fill=WHITE, pt=30, line=LINE):
@@ -49,23 +49,23 @@ def chip(c, name, x, y, w, h, label, color=INK, fill=WHITE, pt=30, line=LINE):
     T(c, name + "_t", label, x + .12, y + (h - 0.55) / 2, w - .24, 0.55, pt, color, bold=True, align=PP_ALIGN.CENTER)
 
 
-def rows_page(c, headline, rows, hl=None, label_w=3.4, top=1.95, pitch=None, tint=CARD):
+def rows_page(c, headline, rows, hl=None, label_w=3.4, top=1.95, pitch=None, tint=CARD, x0=1.0, x1=12.3):
     """Rows of (label, colour, detail[, detail_colour]); `hl` moves a highlight box over one row (same names on every
     slide of a series, so Morph glides the box and recolours the dimmed rows)."""
-    page(c, headline, tint)
+    page(c, headline, tint, x0, x1)
     n = len(rows)
     pitch = pitch or (1.5 if n <= 3 else 1.15)
     if hl is not None:
-        c.rect("hl", 0.8, top + hl * pitch - 0.12, 11.7, pitch - 0.04, HL_FILL, line=(COPPER, 2.5), kind=MSO_SHAPE.ROUNDED_RECTANGLE,
-               round_=0.12)
-    dx = 1.0 + label_w + 0.2
+        c.rect("hl", x0 - 0.2, top + hl * pitch - 0.12, x1 - x0 + 0.4, pitch - 0.04, HL_FILL, line=(COPPER, 2.5),
+               kind=MSO_SHAPE.ROUNDED_RECTANGLE, round_=0.12)
+    dx = x0 + label_w + 0.2
     for i, row in enumerate(rows):
         label, color, detail = row[:3]
         dcolor = row[3] if len(row) > 3 else INK
         dim = hl is not None and i != hl and dcolor == INK
         y = top + i * pitch
-        T(c, f"rl{i}", label, 1.0, y, label_w, 0.6, 34, MUTED if dim else color, bold=True)
-        T(c, f"rd{i}", detail, dx, y + 0.02, 12.3 - dx, pitch - 0.12, MIN_PT, MUTED if dim else dcolor)
+        T(c, f"rl{i}", label, x0, y, label_w, 0.6, 34, MUTED if dim else color, bold=True)
+        T(c, f"rd{i}", detail, dx, y + 0.02, x1 - dx, pitch - 0.12, MIN_PT, MUTED if dim else dcolor)
 
 
 def series(headline, rows_by_step, **kw):

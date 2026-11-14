@@ -5,6 +5,11 @@ on:
       - 'scripts/anatomy_assets.py'
       - 'scripts/anatomy_capture.mjs'
       - 'scripts/build_anatomy_explainer.py'
+      - 'scripts/build_anatomy_youtube.py'
+      - 'scripts/anatomy_script.py'
+      - 'scripts/deck_motion.py'
+      - 'scripts/build_ai_subscriptions_youtube.py'
+      - 'tests/test_anatomy_youtube.py'
       - 'scripts/pptx_world.py'
       - 'scripts/pptx_morph_proxy.py'
       - 'scripts/pptx_validate.py'
@@ -42,6 +47,11 @@ jobs:
         run: python scripts/anatomy_assets.py --out build/anatomy/assets
       - name: Build the 13-slide deck
         run: python scripts/build_anatomy_explainer.py --output build/anatomy/anatomy-explainer.pptx
+      - name: Build and validate the YouTube cut (30 pt minimum; layer A only)
+        run: |
+          python scripts/build_anatomy_youtube.py --output build/anatomy/youtube/anatomy-youtube.pptx
+          python scripts/pptx_validate.py build/anatomy/youtube/anatomy-youtube.pptx --min-loops 0 --strict --min-font 30 \
+            --readable build/anatomy/youtube/anatomy-youtube.readable.json
       - name: Validate structure (layer A only; not PowerPoint playback)
         run: |
           python scripts/pptx_validate.py build/anatomy/anatomy-explainer.pptx --min-loops 0 --strict \
