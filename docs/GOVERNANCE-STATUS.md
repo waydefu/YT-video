@@ -15,6 +15,7 @@
 | 2D 環境循環技術 | [`PPTX-LIVE-MOTION.md`](PPTX-LIVE-MOTION.md) | 工具能力實驗，非 Anatomy 主線交付，也不等同 Live2D |
 | 舊 Anatomy 四頁實驗 | [`ANATOMY-SPIKE-QA.md`](ANATOMY-SPIKE-QA.md)、[`ANATOMY-RAPTOR-V5-QA.md`](ANATOMY-RAPTOR-V5-QA.md) | 只留作歷史比對；不要當目前 Anatomy 作品 |
 | 轉場手法研究（依內容類型選用） | [`PPTX-TRANSITION-CATALOG.md`](PPTX-TRANSITION-CATALOG.md) | RESEARCH；微軟官方三頁已讀（A），其餘為第三方說法（B/C）；逐頁分配僅為提案；PowerPoint 實播與匯出影片未驗證 |
+| Morph 範本宣傳影片逐幀研究（三支） | [`PPTX-MORPH-TEMPLATE-STUDY.md`](PPTX-MORPH-TEMPLATE-STUDY.md) | RESEARCH；只看影片、沒有 `.pptx`，結構為推論；影片與影格不入庫、配樂不重用；PowerPoint 實播未驗 |
 | AI 訂閱簡報 YouTube 旁白稿與分鏡 | [`YOUTUBE-SCRIPT-AI-SUBSCRIPTIONS.md`](YOUTUBE-SCRIPT-AI-SUBSCRIPTIONS.md) | RESEARCH／草稿；旁白與分鏡待使用者審核；數字未向供應商核對；尚未改簡報 |
 | AI 訂閱簡報 YouTube 版（約 50 頁） | [`AI-SUBSCRIPTIONS-YOUTUBE.md`](AI-SUBSCRIPTIONS-YOUTUBE.md) | PREVIEW；依使用者分鏡 v2.1（數字由使用者核對，本 repo 未獨立查證）；30 pt 手機優先；實播、匯出影片、手機未驗 |
 | 動態 motif 工具組（旋轉、每頁轉場時長、六種動態） | [`PPTX-MOTION-KIT.md`](PPTX-MOTION-KIT.md) | SPIKE；幾何有測試；示範 16 頁僅靜態與代理幀；PowerPoint 補間旋轉未驗 |
