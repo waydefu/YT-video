@@ -20,15 +20,17 @@ P159 = "http://schemas.microsoft.com/office/powerpoint/2015/09/main"
 P14 = "http://schemas.microsoft.com/office/powerpoint/2010/main"
 
 def transition(duration, hold, first=False):
+    """hold = auto-advance ms; None = advance on click only (classroom use)."""
+    adv = "" if hold is None else f' advTm="{hold}"'
     if first:
-        return f'<p:transition spd="slow" advTm="{hold}" advClick="1"><p:fade/></p:transition>'
+        return f'<p:transition spd="slow"{adv} advClick="1"><p:fade/></p:transition>'
     return (
         f'<mc:AlternateContent xmlns:mc="{MC}">'
         f'<mc:Choice xmlns:p159="{P159}" Requires="p159">'
-        f'<p:transition spd="slow" advTm="{hold}" advClick="1" '
+        f'<p:transition spd="slow"{adv} advClick="1" '
         f'xmlns:p14="{P14}" p14:dur="{duration}">'
         '<p159:morph option="byObject"/></p:transition></mc:Choice>'
-        f'<mc:Fallback><p:transition spd="slow" advTm="{hold}" advClick="1">'
+        f'<mc:Fallback><p:transition spd="slow"{adv} advClick="1">'
         '<p:fade/></p:transition></mc:Fallback></mc:AlternateContent>'
     )
 
